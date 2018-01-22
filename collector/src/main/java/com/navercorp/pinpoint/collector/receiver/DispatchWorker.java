@@ -56,6 +56,7 @@ public class DispatchWorker {
         this.metricRegistry = metricRegistry;
     }
 
+    //创建对应的线程池，默认创建的是newFixedThreadPool线程池，如果对应的线程监控开了，就创建监控相关的线程池
     public void start() {
         logger.info("{} start.", getName());
         ExecutorService worker = createWorker(getName(), getThreadSize(), getQueueSize());
@@ -72,6 +73,7 @@ public class DispatchWorker {
     }
 
     private ExecutorService createWorker(String workerName, int threadSize, int queueSize) {
+        //创建的是:固定线程数（最大最小一致）,固定队列长度的守护线程
         return ExecutorFactory.newFixedThreadPool(threadSize, queueSize, workerName, true);
     }
 

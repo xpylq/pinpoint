@@ -43,6 +43,7 @@ import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerBossPool;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioWorkerPool;
+import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.ThreadNameDeterminer;
 import org.jboss.netty.util.Timer;
 import org.slf4j.Logger;
@@ -101,11 +102,28 @@ public class PinpointServerAcceptor implements PinpointServerConfig {
     }
 
     public PinpointServerAcceptor(ClusterOption clusterOption) {
+        //初始化boos和worker线程
         ServerBootstrap bootstrap = createBootStrap(1, WORKER_COUNT);
+        //参数设置
         setOptions(bootstrap);
+        /**
+         * 增加netty的handler,这里有三个:
+         * 1.decoder:ServerPacketDecoder
+         * 2.encoder:PacketEncoder
+         * 3.handler:pinpointServerChannelHandler
+         **/
         addPipeline(bootstrap);
         this.bootstrap = bootstrap;
 
+        /**
+         * todo:这边是否需要统一的用一个HashedWheelTimer,大致看了一下，独立创建了不少实例
+         * {@link HashedWheelTimer} creates a new thread whenever it is instantiated and
+         * started.  Therefore, you should make sure to create only one instance and
+         * share it across your application.  One of the common mistakes, that makes
+         * your application unresponsive, is to create a new instance in
+         * {@link ChannelPipelineFactory}, which results in the creation of a new thread
+         * for every connection.\
+         */
         this.healthCheckTimer = TimerFactory.createHashedWheelTimer("PinpointServerSocket-HealthCheckTimer", 50, TimeUnit.MILLISECONDS, 512);
         this.healthCheckManager = new HealthCheckManager(healthCheckTimer, channelGroup);
 

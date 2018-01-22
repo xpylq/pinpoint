@@ -1,5 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <organization>
         <name>Naver Corporation</name>
@@ -95,11 +96,16 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--Hamcrest is a framework for writing matcher objects allowing 'match' rules to be defined declaratively.
+        There are a number of situations where matchers are invaluble, such as UI validation, or data filtering,
+        but it is in the area of writing flexible tests that matchers are most commonly used.
+        This tutorial shows you how to use Hamcrest for unit testing.-->
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-library</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--Most popular mocking framework for Java-->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -249,9 +255,9 @@
             </dependency>
             <!-- for spring test -->
             <dependency>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-            <version>1.2.0</version>
+                <groupId>com.jayway.jsonpath</groupId>
+                <artifactId>json-path</artifactId>
+                <version>1.2.0</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -570,8 +576,6 @@
             </dependency>
 
 
-
-
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
@@ -594,7 +598,6 @@
                 <artifactId>aspectjweaver</artifactId>
                 <version>1.8.10</version>
             </dependency>
-
 
 
             <dependency>
@@ -623,7 +626,6 @@
                 <artifactId>standard</artifactId>
                 <version>1.1.2</version>
             </dependency>
-
 
 
             <dependency>

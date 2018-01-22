@@ -26,12 +26,14 @@ import com.navercorp.pinpoint.ProductInfo;
 /**
  * @author emeroad
  * @author netspider
+ * agent代理类，在main方法执行执行
  */
 public class PinpointBootStrap {
 
     private static final BootLogger logger = BootLogger.getLogger(PinpointBootStrap.class.getName());
 
     private static final LoadState STATE = new LoadState();
+
 
 
     public static void premain(String agentArgs, Instrumentation instrumentation) {

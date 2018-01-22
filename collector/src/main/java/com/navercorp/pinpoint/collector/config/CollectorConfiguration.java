@@ -19,6 +19,7 @@ package com.navercorp.pinpoint.collector.config;
 import com.navercorp.pinpoint.common.util.PropertyUtils;
 import com.navercorp.pinpoint.common.util.SimpleProperty;
 import com.navercorp.pinpoint.common.util.SystemProperty;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public class CollectorConfiguration implements InitializingBean {
 
     private int agentEventWorkerThreadSize;
     private int agentEventWorkerQueueSize;
-    
+
     private List<String> l4IpList = Collections.emptyList();
 
     private boolean clusterEnable;
@@ -97,7 +98,7 @@ public class CollectorConfiguration implements InitializingBean {
     public void setAgentEventWorkerThreadSize(int agentEventWorkerThreadSize) {
         this.agentEventWorkerThreadSize = agentEventWorkerThreadSize;
     }
-    
+
     public int getAgentEventWorkerQueueSize() {
         return agentEventWorkerQueueSize;
     }
@@ -154,6 +155,7 @@ public class CollectorConfiguration implements InitializingBean {
         this.clusterListenPort = clusterListenPort;
     }
 
+    //文件形式读取pinpoint-collector.properties
     public void readConfigFile() {
 
         // may be useful for some kind of standalone like testcase. It should be modified to read a classpath for testcase.
@@ -174,13 +176,15 @@ public class CollectorConfiguration implements InitializingBean {
 
     }
 
+    //属性后处理方法，
     @Override
     public void afterPropertiesSet() throws Exception {
         final Properties properties = Objects.requireNonNull(this.properties, "properties must not be null");
         readPropertyValues(properties);
     }
 
-    protected  void readPropertyValues(Properties properties) {
+    //加载pinpoint-collector.properties中的属性到对应的变量中
+    protected void readPropertyValues(Properties properties) {
         LOGGER.info("pinpoint-collector.properties read.");
 
         this.agentEventWorkerThreadSize = readInt(properties, "collector.agentEventWorker.threadSize", 32);
@@ -189,7 +193,7 @@ public class CollectorConfiguration implements InitializingBean {
         this.flinkClusterEnable = readBoolean(properties, "flink.cluster.enable");
         this.flinkClusterZookeeperAddress = readString(properties, "flink.cluster.zookeeper.address", "");
         this.flinkClusterSessionTimeout = readInt(properties, "flink.cluster.zookeeper.sessiontimeout", -1);
-        
+
         String[] l4Ips = StringUtils.split(readString(properties, "collector.l4.ip", null), ",");
         if (l4Ips == null) {
             this.l4IpList = Collections.emptyList();
@@ -201,7 +205,7 @@ public class CollectorConfiguration implements InitializingBean {
                 }
             }
         }
-        
+
         this.clusterEnable = readBoolean(properties, "cluster.enable");
         this.clusterAddress = readString(properties, "cluster.zookeeper.address", "");
         this.clusterSessionTimeout = readInt(properties, "cluster.zookeeper.sessiontimeout", -1);
@@ -215,7 +219,7 @@ public class CollectorConfiguration implements InitializingBean {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("{}={}", propertyName, result);
         }
-        return result ;
+        return result;
     }
 
     protected static int readInt(Properties properties, String propertyName, int defaultValue) {
@@ -238,7 +242,7 @@ public class CollectorConfiguration implements InitializingBean {
 
     protected static boolean readBoolean(Properties properties, String propertyName) {
         final String value = properties.getProperty(propertyName);
-        
+
         // if a default value will be needed afterwards, may match string value instead of Utils.
         // for now stay unmodified because of no need.
 

@@ -39,6 +39,7 @@ import com.navercorp.pinpoint.rpc.server.PinpointServerAcceptor;
 import com.navercorp.pinpoint.rpc.server.ServerMessageListener;
 import com.navercorp.pinpoint.rpc.server.handler.ServerStateChangeEventHandler;
 import com.navercorp.pinpoint.rpc.util.MapUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -96,9 +98,10 @@ public class AgentBaseDataReceiver {
         this.configuration = Assert.requireNonNull(configuration, "config must not be null");
 
         this.l4IpList = l4IpList;
-
+        //创建分发worker的配置
         DispatchWorkerOption dispatchWorkerOption = new DispatchWorkerOption("Pinpoint-AgentBaseDataReceiver-Worker", configuration.getWorkerThreadSize(), configuration.getWorkerQueueSize(), 1, configuration.isWorkerMonitorEnable());
-        this.worker =  new DispatchWorker(dispatchWorkerOption);
+        //创建对应的分发worker线程池
+        this.worker = new DispatchWorker(dispatchWorkerOption);
 
         this.sendPacketHandler = new SendPacketHandler(dispatchHandler);
         this.requestPacketHandler = new RequestPacketHandler(dispatchHandler);
@@ -112,7 +115,9 @@ public class AgentBaseDataReceiver {
             logger.info("start() started");
         }
 
+        //创建netty-server服务
         PinpointServerAcceptor acceptor = new PinpointServerAcceptor();
+        //准备阶段:没看懂
         prepare(acceptor);
 
         worker.setMetricRegistry(metricRegistry);
@@ -156,6 +161,7 @@ public class AgentBaseDataReceiver {
                 recordPing(pingPacket, pinpointServer);
             }
         });
+        //启动nettty-server
         acceptor.bind(configuration.getBindIp(), configuration.getBindPort());
 
         this.serverAcceptor = acceptor;
@@ -251,7 +257,6 @@ public class AgentBaseDataReceiver {
             logger.info("stop() completed");
         }
     }
-
 
 
 }
