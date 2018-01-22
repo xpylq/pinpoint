@@ -68,7 +68,7 @@ public class PinpointServerAcceptor implements PinpointServerConfig {
     private static final long CHANNEL_CLOSE_MAXIMUM_WAITING_TIME_MILLIS = 3 * 1000;
     private static final int HEALTH_CHECK_INTERVAL_TIME_MILLIS = 5 * 60 * 1000;
     private static final int WORKER_COUNT = CpuUtils.workerCount();
-
+    //netty释放标记,true:服务停止,已经释放  false:服务正常运行
     private volatile boolean released;
 
     private ServerBootstrap bootstrap;
@@ -316,12 +316,13 @@ public class PinpointServerAcceptor implements PinpointServerConfig {
         return pinpointServerList;
     }
 
+    //自定义的handler
     class PinpointServerChannelHandler extends SimpleChannelHandler {
         @Override
         public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
             final Channel channel = e.getChannel();
             logger.info("channelConnected started. channel:{}", channel);
-
+            //netty服务是否开启
             if (released) {
                 logger.warn("already released. channel:{}", channel);
                 channel.write(new ServerClosePacket()).addListener(new ChannelFutureListener() {
@@ -332,18 +333,18 @@ public class PinpointServerAcceptor implements PinpointServerConfig {
                 });
                 return;
             }
-
+            //过滤指定ip
             boolean isIgnore = isIgnoreAddress(channel);
             if (isIgnore) {
                 logger.debug("channelConnected ignore address. channel:" + channel);
                 return;
             }
-
+            //创建ponpointServer实例,一个channel一个,绑在channel的attachment上
             DefaultPinpointServer pinpointServer = createPinpointServer(channel);
             
             channel.setAttachment(pinpointServer);
             channelGroup.add(channel);
-
+            //start，发起SocketStateCode.CONNECTED和RUN_WITHOUT_HANDSHAKE两个状态
             pinpointServer.start();
 
             super.channelConnected(ctx, e);
@@ -372,18 +373,15 @@ public class PinpointServerAcceptor implements PinpointServerConfig {
 
             super.channelClosed(ctx, e);
         }
-
+        //核心方法，接收并处理client的消息
         @Override
         public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
             final Channel channel = e.getChannel();
-
             DefaultPinpointServer pinpointServer = (DefaultPinpointServer) channel.getAttachment();
             if (pinpointServer != null) {
                 Object message = e.getMessage();
-
                 pinpointServer.messageReceived(message);
             }
-
             super.messageReceived(ctx, e);
         }
     }

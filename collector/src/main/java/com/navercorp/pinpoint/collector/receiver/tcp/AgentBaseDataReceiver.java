@@ -117,12 +117,13 @@ public class AgentBaseDataReceiver {
 
         //创建netty-server服务
         PinpointServerAcceptor acceptor = new PinpointServerAcceptor();
-        //准备阶段:没看懂
+        //准备阶段,增加状态处理handler
         prepare(acceptor);
 
         worker.setMetricRegistry(metricRegistry);
         worker.start();
 
+        // 这个ServerMessageListener，才是处理真正不同类型命令的函数入口，它也是做一个转发作用，真正的处理逻辑在worker线程里
         // take care when attaching message handlers as events are generated from the IO thread.
         // pass them to a separate queue and handle them in a different thread.
         acceptor.setMessageListener(new ServerMessageListener() {
@@ -161,7 +162,7 @@ public class AgentBaseDataReceiver {
                 recordPing(pingPacket, pinpointServer);
             }
         });
-        //启动nettty-server
+        //启动netty-server
         acceptor.bind(configuration.getBindIp(), configuration.getBindPort());
 
         this.serverAcceptor = acceptor;
