@@ -102,12 +102,13 @@ public class ZookeeperClusterService extends AbstractClusterService {
                     logger.info("{} initialization started.", this.getClass().getSimpleName());
 
                     ClusterManagerWatcher watcher = new ClusterManagerWatcher();
+                    //初始化zk-client
                     this.client = new DefaultZookeeperClient(config.getClusterAddress(), config.getClusterSessionTimeout(), watcher);
                     this.client.connect();
-
+                    //维护每一个agent信息
                     this.profilerClusterManager = new ZookeeperProfilerClusterManager(client, serverIdentifier, clusterPointRouter.getTargetClusterPointRepository());
                     this.profilerClusterManager.start();
-
+                    //维护每一个pinpoint-web信息
                     this.webClusterManager = new ZookeeperClusterManager(client, PINPOINT_WEB_CLUSTER_PATH, clusterConnectionManager);
                     this.webClusterManager.start();
 

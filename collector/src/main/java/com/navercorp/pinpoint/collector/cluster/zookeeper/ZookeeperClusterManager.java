@@ -85,7 +85,7 @@ public class ZookeeperClusterManager {
 
                     workerState.changeStateStarted();
                     logger.info("{} initialization completed.", this.getClass().getSimpleName());
-
+                    //todo:从上下文来看，这边的clusterConnectionManager一定需要实例化，否则Worker会报空指针
                     if (clusterConnectionManager != null) {
                         clusterConnectionManager.start();
                     }

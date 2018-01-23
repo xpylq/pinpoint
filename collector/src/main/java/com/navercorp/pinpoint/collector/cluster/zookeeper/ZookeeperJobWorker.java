@@ -207,9 +207,10 @@ public class ZookeeperJobWorker implements Runnable {
         ZookeeperJob latestHeadJob = null;
 
         // Things to consider
-        // spinLock possible when events are not deleted
+        // spinLock(自旋锁) possible when events are not deleted
         // may lead to PinpointServer leak when events are left unresolved
         while (workerState.isStarted()) {
+            //等待，直到获得zkJobList
             boolean eventExists = awaitJob(60000, 200);
             if (eventExists) {
                 List<ZookeeperJob> zookeeperJobList = getLatestZookeeperJobList();
@@ -226,6 +227,7 @@ public class ZookeeperJobWorker implements Runnable {
 
                 latestHeadJob = headJob;
                 boolean completed = handle(zookeeperJobList);
+                //如果失败，就把获取的job按原来的顺序重新放到双向队列里
                 if (!completed) {
                     // rollback
                     for (int i = zookeeperJobList.size() - 1; i >= 0; i--) {
@@ -239,6 +241,7 @@ public class ZookeeperJobWorker implements Runnable {
     }
 
     private List<ZookeeperJob> getLatestZookeeperJobList() {
+        //从双向队列头拿出一个job
         ZookeeperJob defaultJob = zookeeperJobDeque.poll();
         if (defaultJob == null) {
             return Collections.emptyList();
@@ -246,7 +249,7 @@ public class ZookeeperJobWorker implements Runnable {
 
         List<ZookeeperJob> result = new ArrayList<>();
         result.add(defaultJob);
-
+        //根据顺序拿出和defaultJob一样类型的所有job
         while (true) {
             ZookeeperJob zookeeperJob = zookeeperJobDeque.poll();
             if (zookeeperJob == null) {
@@ -269,6 +272,7 @@ public class ZookeeperJobWorker implements Runnable {
      * @param waitUnitTimeMillis time to wait for each wait attempt in milliseconds
      * @return true if event triggered, false otherwise
      */
+    //todo:这块不太看得懂
     private boolean awaitJob(long waitTimeMillis, long waitUnitTimeMillis) {
         synchronized (lock) {
             long waitTime = waitTimeMillis;
@@ -334,18 +338,20 @@ public class ZookeeperJobWorker implements Runnable {
         if (logger.isDebugEnabled()) {
             logger.debug("handleUpdate zookeeperJobList:{}", zookeeperJobList);
         }
-
+        //获取jobList中的所有key集合
         final List<String> addContentCandidateList = getZookeeperKeyList(zookeeperJobList);
 
         try {
+            //更新node中的data
             if (zookeeperClient.exists(collectorUniqPath)) {
                 final String currentClusterData = getClusterData();
 
                 final String updateCluster = addIfAbsentContents(currentClusterData, addContentCandidateList);
+                //更新data
                 setClusterData(updateCluster);
             } else {
+                //创建node,并增加data
                 zookeeperClient.createPath(collectorUniqPath);
-
                 // should return error even if NODE exists if the data is important
                 final String newClusterData = addIfAbsentContents("", addContentCandidateList);
                 final byte[] newClusterDataBytes = BytesUtils.toBytes(newClusterData);
@@ -415,12 +421,13 @@ public class ZookeeperJobWorker implements Runnable {
     private String addIfAbsentContents(String clusterDataString, List<String> addContentCandidateList) {
         final List<String> clusterDataList = tokenize(clusterDataString);
 
+        //筛选出所有新的jobKey
         final List<String> addContentList = getChangeList(clusterDataList, addContentCandidateList);
 
         if (addContentList.isEmpty()) {
             return clusterDataString;
         }
-
+        //合并
         return join(clusterDataString, addContentList);
     }
 

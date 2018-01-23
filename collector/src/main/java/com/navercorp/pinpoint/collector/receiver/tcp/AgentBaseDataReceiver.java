@@ -86,6 +86,7 @@ public class AgentBaseDataReceiver {
     @Resource(name = "agentLifeCycleHandler")
     private AgentLifeCycleHandler agentLifeCycleHandler;
 
+    //这个暂时没有加任何状态变更的handler
     @Resource(name = "channelStateChangeEventHandlers")
     private List<ServerStateChangeEventHandler> channelStateChangeEventHandlers = Collections.emptyList();
 
@@ -173,7 +174,9 @@ public class AgentBaseDataReceiver {
     }
 
     private void prepare(PinpointServerAcceptor acceptor) {
+        //是否开启集群
         if (clusterService != null && clusterService.isEnable()) {
+            //clusterService.getChannelStateChangeEventHandler()=ZookeeperProfilerClusterManager
             acceptor.addStateChangeEventHandler(clusterService.getChannelStateChangeEventHandler());
         }
 

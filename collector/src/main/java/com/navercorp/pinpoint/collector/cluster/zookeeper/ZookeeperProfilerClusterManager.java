@@ -33,15 +33,16 @@ import java.util.Map;
 
 /**
  * @author Taejin Koo
+ * 在zk中维护所有agent信息
  */
 public class ZookeeperProfilerClusterManager implements ServerStateChangeEventHandler {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
+    //维护agent(channel)相关的信息到zk中
     private final ZookeeperJobWorker worker;
 
     private final CommonStateContext workerState;
-
+    //缓存每一个agent(channel)相关的PinpointServer信息等
     private final ClusterPointRepository profileCluster;
 
     private final Object lock = new Object();

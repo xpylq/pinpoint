@@ -123,6 +123,7 @@ public class CollectorConfiguration implements InitializingBean {
         this.clusterEnable = clusterEnable;
     }
 
+    //cluster.zookeeper.address
     public String getClusterAddress() {
         return clusterAddress;
     }
@@ -131,6 +132,7 @@ public class CollectorConfiguration implements InitializingBean {
         this.clusterAddress = clusterAddress;
     }
 
+    //cluster.zookeeper.sessiontimeout
     public int getClusterSessionTimeout() {
         return clusterSessionTimeout;
     }

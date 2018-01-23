@@ -20,10 +20,12 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Taejin Koo
+ * 每个zkJob对象代表一个agent
  */
 public class ZookeeperJob {
 
     private final Type type;
+    //applicationName + ":" + agentId + ":" + startTimeStamp;
     private final String key;
 
     public ZookeeperJob(Type type) {
