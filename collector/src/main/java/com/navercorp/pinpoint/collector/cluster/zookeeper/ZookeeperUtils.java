@@ -16,6 +16,8 @@
 
 package com.navercorp.pinpoint.collector.cluster.zookeeper;
 
+import com.navercorp.pinpoint.common.server.cluster.zookeeper.ZookeeperConstatns;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
@@ -44,7 +46,6 @@ public final class ZookeeperUtils {
         }
     }
 
-
     public static boolean isDisconnectedEvent(WatchedEvent event) {
         KeeperState state = event.getState();
         EventType eventType = event.getType();
@@ -58,6 +59,22 @@ public final class ZookeeperUtils {
         } else {
             return false;
         }
+    }
+
+    public static String bindingPathAndNode(String path, String zNodeName) {
+        return bindingPathAndNode(path, zNodeName, ZookeeperConstatns.PATH_SEPARATOR);
+    }
+
+    public static String bindingPathAndNode(String path, String zNodeName, String pathSeparator) {
+        StringBuilder fullPath = new StringBuilder(StringUtils.length(path) + StringUtils.length(zNodeName) + 1);
+
+        fullPath.append(path);
+        if (!path.endsWith(pathSeparator)) {
+            fullPath.append(pathSeparator);
+        }
+        fullPath.append(zNodeName);
+
+        return fullPath.toString();
     }
 
 }

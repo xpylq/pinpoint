@@ -16,12 +16,12 @@
 
 package com.navercorp.pinpoint.collector.cluster.zookeeper;
 
-import com.navercorp.pinpoint.collector.TestAwaitTaskUtils;
-import com.navercorp.pinpoint.collector.TestAwaitUtils;
-import com.navercorp.pinpoint.collector.cluster.zookeeper.exception.PinpointZookeeperException;
+import com.navercorp.pinpoint.common.server.cluster.zookeeper.exception.PinpointZookeeperException;
 import com.navercorp.pinpoint.common.util.BytesUtils;
 import com.navercorp.pinpoint.rpc.packet.HandshakePropertyType;
 import com.navercorp.pinpoint.rpc.server.PinpointServer;
+import com.navercorp.pinpoint.test.utils.TestAwaitTaskUtils;
+import com.navercorp.pinpoint.test.utils.TestAwaitUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -228,6 +228,11 @@ public class ZookeeperJobWorkerTest {
 
         @Override
         public synchronized String createNode(String zNodePath, byte[] data) throws PinpointZookeeperException, InterruptedException {
+            return createNode(zNodePath, data, false);
+        }
+
+        @Override
+        public String createNode(String zNodePath, byte[] data, boolean throwExceptionIfNodeExists) throws PinpointZookeeperException, InterruptedException {
             contents.put(zNodePath, data);
             return "";
         }

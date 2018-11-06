@@ -1,11 +1,5 @@
 (function(){ 
 	'use strict';
-	/**
-	 * (en)한국어 Tooltip 
-	 * @ko 한국어 Tooltip
-	 * @group Config
-	 * @name pinpointApp#helpContent-ko
-	 */
 	var oHelp = {
 		configuration: {
 			general: {
@@ -463,6 +457,9 @@
 				category: [{
 					title: "[범례]",
 					items: [{
+						name: "<span class='glyphicon glyphicon-home'></span>",
+						desc: "물리서버 호스트 이름"
+					},{
 						name: "<span class='glyphicon glyphicon-hdd'></span>",
 						desc: "물리서버에 설치된 서버 인스턴스에서 동작중인 Pinpoint의 agentId입니다."
 					}]
@@ -560,16 +557,16 @@
 			},
 			permGen: {
 				mainStyle: "",
-				title: "PermGen",
-				desc: "JVM의 PermGen 정보와 full garbage collection 소요 시간",
+				title: "Non-Heap",
+				desc: "JVM의 non-heap 정보와 full garbage collection 소요 시간",
 				category: [{
 					title: "[범례]",
 					items: [{
 						name: "Max",
-						desc: "최대 heap 사이즈"
+						desc: "최대 non-heap 사이즈"
 					},{
 						name: "Used",
-						desc: "현재 사용 중인 heap 사이즈"
+						desc: "현재 사용 중인 non-heap 사이즈"
 					},{
 						name: "FGC",
 						desc: "Full garbage collection의 총 소요 시간(2번 이상 발생 시, 괄호 안에 발생 횟수 표시)"
@@ -669,6 +666,66 @@
 					}]
 				}]
 			},
+			openFileDescriptor: {
+				mainStyle: "",
+				title: "File Descriptor",
+				desc: "에이전트의 File Descriptor 현황을 보여줍니다.",
+				category: [{
+					title: "[범례]",
+					items: [{
+						name: "Open File Descriptor",
+						desc: "현재 열려있는 File Descriptor 개수"
+					}]
+				}]
+			},
+			directBufferCount: {
+				mainStyle: "",
+				title: "Direct Buffer",
+				desc: "에이전트의 Direct Buffer 현황을 보여줍니다.",
+				category: [{
+					title: "[범례]",
+					items: [{
+						name: "Direct Buffer Count",
+						desc: "현재 Direct Buffer 의 개수"
+					}]
+				}]
+			},
+			directBufferMemory: {
+				mainStyle: "",
+				title: "Direct Buffer Memory",
+				desc: "에이전트의 Direct Buffer Memory 현황을 보여줍니다.",
+				category: [{
+					title: "[범례]",
+					items: [{
+						name: "Direct Buffer Memory Used",
+						desc: "현재 Direct Buffer 가 사용중인 메모리"
+					}]
+				}]
+			},
+			mappedBufferCount: {
+				mainStyle: "",
+				title: "Mapped Buffer",
+				desc: "에이전트의 Mapped Buffer 현황을 보여줍니다.",
+				category: [{
+					title: "[범례]",
+					items: [{
+						name: "Mapped Buffer Count",
+						desc: "현재 Mapped Buffer 의 개수"
+					}]
+				}]
+			},
+			mappedBufferMemory: {
+				mainStyle: "",
+				title: "Mapped Buffer Memory",
+				desc: "에이전트의 Mapped Buffer Memory 현황을 보여줍니다.",
+				category: [{
+					title: "[범례]",
+					items: [{
+						name: "Mapped Buffer Memory Used",
+						desc: "현재 Mapped Buffer 가 사용중인 메모리"
+					}]
+				}]
+			},
 			wrongApp: [
 				"<div style='font-size:12px'>해당 agent는 {{application1}}이 아닌 {{application2}}에 포함되어 있습니다.<br>",
 				"원인은 다음 중 하나입니다.<hr>",
@@ -697,19 +754,19 @@
 			},
 			statPermGen: {
 				mainStyle: "",
-				title: "PermGen",
-				desc: "Agent들이 사용하는 JVM Permgen 사이즈 정보",
+				title: "Non-Heap",
+				desc: "Agent들이 사용하는 JVM non-heap 사이즈 정보",
 				category: [{
 					title: "[범례]",
 					items: [{
 						name: "MAX",
-						desc: "Agent들이 사용하는 perm 중 가장 큰 값"
+						desc: "Agent들이 사용하는 non-heap 중 가장 큰 값"
 					},{
 						name: "AVG",
-						desc: "Agent들이 사용하는 perm의 평균값"
+						desc: "Agent들이 사용하는 non-heap의 평균값"
 					},{
 						name: "MIN",
-						desc: "Agent들이 사용하는 perm 중 가장 작은 값"
+						desc: "Agent들이 사용하는 non-heap 중 가장 작은 값"
 					}]
 				}]
 			},
@@ -827,6 +884,96 @@
 					},{
 						name: "MIN",
 						desc: "agent들의 DataSource connection 개수 중 가장 작은 값"
+					}]
+				}]
+			},
+			statOpenFileDescriptor: {
+				mainStyle: "",
+				title: "File Descriptor",
+				desc: "에이전트들의 File Descriptor 현황",
+				category: [{
+					title: "[범례]",
+					items: [{
+						name: "MAX",
+						desc: "Agent 가 열고 있는 File Descriptor 개수 중 가장 큰 값"
+					},{
+						name: "AVG",
+						desc: "Agent 가 열고 있는 File Descriptor 개수의 평균 값"
+					},{
+						name: "MIN",
+						desc: "Agent 가 열고 있는 File Descriptor 개수 중 가장 작은 값"
+					}]
+				}]
+			},
+			statDirectBufferCount: {
+				mainStyle: "",
+				title: "Direct Buffer",
+				desc: "Agent들의 Direct Buffer 현황",
+				category: [{
+					title: "[범례]",
+					items: [{
+						name: "MAX",
+						desc: "Agent 가 사용 중인 Direct Buffer 개수 중 가장 큰 값"
+					},{
+						name: "AVG",
+						desc: "Agent 가 사용 중인 Direct Buffer 개수의 평균 값"
+					},{
+						name: "MIN",
+						desc: "Agent 가 사용 중인 Direct Buffer 개수 중 가장 작은 값"
+					}]
+				}]
+			},
+			statDirectBufferMemory: {
+				mainStyle: "",
+				title: "Direct Buffer Memory",
+				desc: "Agent들의 Direct Buffer Memory 사용 현황",
+				category: [{
+					title: "[범례]",
+					items: [{
+						name: "MAX",
+						desc: "Agent 가 사용 중인 Direct Buffer Memory 중 가장 큰 값"
+					},{
+						name: "AVG",
+						desc: "Agent 가 사용 중인 Direct Buffer Memory 의 평균 값"
+					},{
+						name: "MIN",
+						desc: "Agent 가 사용 중인 Direct Buffer Memory 중 가장 작은 값"
+					}]
+				}]
+			},
+			statMappedBufferCount: {
+				mainStyle: "",
+				title: "Mapped Buffer",
+				desc: "Agent들의 Mapped Buffer 현황",
+				category: [{
+					title: "[범례]",
+					items: [{
+						name: "MAX",
+						desc: "Agent 가 사용 중인 Mapped Buffer 개수 중 가장 큰 값"
+					},{
+						name: "AVG",
+						desc: "Agent 가 사용 중인 Mapped Buffer 개수의 평균 값"
+					},{
+						name: "MIN",
+						desc: "Agent 가 사용 중인 Mapped Buffer 개수 중 가장 작은 값"
+					}]
+				}]
+			},
+			statMappedBufferMemory: {
+				mainStyle: "",
+				title: "Mapped Buffer Memory",
+				desc: "Agent들의 Mapped Buffer Memory 사용 현황",
+				category: [{
+					title: "[범례]",
+					items: [{
+						name: "MAX",
+						desc: "Agent 가 사용 중인 Mapped Buffer Memory 중 가장 큰 값"
+					},{
+						name: "AVG",
+						desc: "Agent 가 사용 중인 Mapped Buffer Memory 의 평균 값"
+					},{
+						name: "MIN",
+						desc: "Agent 가 사용 중인 Mapped Buffer Memory 중 가장 작은 값"
 					}]
 				}]
 			}

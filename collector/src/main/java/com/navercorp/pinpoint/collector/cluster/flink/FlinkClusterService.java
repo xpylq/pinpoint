@@ -15,10 +15,15 @@
  */
 package com.navercorp.pinpoint.collector.cluster.flink;
 
-import com.navercorp.pinpoint.collector.cluster.zookeeper.*;
+import com.navercorp.pinpoint.collector.cluster.zookeeper.DefaultZookeeperClient;
+import com.navercorp.pinpoint.collector.cluster.zookeeper.ZookeeperClient;
+import com.navercorp.pinpoint.collector.cluster.zookeeper.ZookeeperClusterManager;
+import com.navercorp.pinpoint.collector.cluster.zookeeper.ZookeeperUtils;
 import com.navercorp.pinpoint.collector.config.CollectorConfiguration;
+import com.navercorp.pinpoint.common.server.cluster.zookeeper.ZookeeperEventWatcher;
 import com.navercorp.pinpoint.common.server.util.concurrent.CommonState;
 import com.navercorp.pinpoint.common.server.util.concurrent.CommonStateContext;
+import com.navercorp.pinpoint.common.util.Assert;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher.Event.EventType;
@@ -48,9 +53,9 @@ public class FlinkClusterService {
     private ZookeeperClusterManager zookeeperClusterManager;
 
     public FlinkClusterService(CollectorConfiguration config, FlinkClusterConnectionManager clusterConnectionManager) {
-        this.config = config;
+        this.config = Assert.requireNonNull(config, "config must not be null");
         this.serviceState = new CommonStateContext();
-        this.clusterConnectionManager = clusterConnectionManager;
+        this.clusterConnectionManager = Assert.requireNonNull(clusterConnectionManager, "clusterConnectionManager must not be null");
     }
 
     @PostConstruct

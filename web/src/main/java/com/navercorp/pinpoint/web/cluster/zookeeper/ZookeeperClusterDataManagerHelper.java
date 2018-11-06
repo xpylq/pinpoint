@@ -16,6 +16,9 @@
 
 package com.navercorp.pinpoint.web.cluster.zookeeper;
 
+import com.navercorp.pinpoint.common.server.cluster.zookeeper.ZookeeperConstatns;
+import com.navercorp.pinpoint.common.util.CollectionUtils;
+import com.navercorp.pinpoint.common.util.MapUtils;
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +33,6 @@ import java.util.Map;
  */
 public class ZookeeperClusterDataManagerHelper {
 
-    private static final String PATH_SEPARATOR = "/";
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public ZookeeperClusterDataManagerHelper() {
@@ -40,7 +41,7 @@ public class ZookeeperClusterDataManagerHelper {
     Map<String, byte[]> getCollectorData(ZookeeperClient client, String path) {
         try {
             List<String> collectorList = client.getChildren(path, true);
-            if (collectorList == Collections.EMPTY_LIST) {
+            if (CollectionUtils.isEmpty(collectorList)) {
                 return Collections.emptyMap();
             }
 
@@ -65,8 +66,8 @@ public class ZookeeperClusterDataManagerHelper {
         StringBuilder fullPath = new StringBuilder();
 
         fullPath.append(path);
-        if (!path.endsWith(PATH_SEPARATOR)) {
-            fullPath.append(PATH_SEPARATOR);
+        if (!path.endsWith(ZookeeperConstatns.PATH_SEPARATOR)) {
+            fullPath.append(ZookeeperConstatns.PATH_SEPARATOR);
         }
         fullPath.append(zNodeName);
 
@@ -111,7 +112,7 @@ public class ZookeeperClusterDataManagerHelper {
 
     Map<String, byte[]> syncPullCollectorCluster(ZookeeperClient client, String path) {
         Map<String, byte[]> map = getCollectorData(client, path);
-        if (map == Collections.EMPTY_MAP) {
+        if (MapUtils.isEmpty(map)) {
             return Collections.emptyMap();
         }
 

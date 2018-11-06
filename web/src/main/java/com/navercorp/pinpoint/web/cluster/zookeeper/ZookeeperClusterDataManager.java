@@ -16,11 +16,14 @@
 
 package com.navercorp.pinpoint.web.cluster.zookeeper;
 
+import com.navercorp.pinpoint.common.server.cluster.zookeeper.ZookeeperConstatns;
+import com.navercorp.pinpoint.common.server.cluster.zookeeper.ZookeeperEventWatcher;
+import com.navercorp.pinpoint.common.server.cluster.zookeeper.exception.NoNodeException;
+import com.navercorp.pinpoint.common.util.MapUtils;
 import com.navercorp.pinpoint.rpc.util.ClassUtils;
 import com.navercorp.pinpoint.rpc.util.TimerFactory;
 import com.navercorp.pinpoint.web.cluster.ClusterDataManager;
 import com.navercorp.pinpoint.web.cluster.CollectorClusterInfoRepository;
-import com.navercorp.pinpoint.web.cluster.zookeeper.exception.NoNodeException;
 import com.navercorp.pinpoint.web.config.WebConfig;
 import com.navercorp.pinpoint.web.vo.AgentInfo;
 import org.apache.zookeeper.WatchedEvent;
@@ -33,7 +36,6 @@ import org.jboss.netty.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -79,7 +81,7 @@ public class ZookeeperClusterDataManager implements ClusterDataManager, Zookeepe
     @Override
     public void start() throws Exception {
         this.timer = createTimer();
-        this.client = new ZookeeperClient(connectAddress, sessionTimeout, this, ZookeeperClient.DEFAULT_RECONNECT_DELAY_WHEN_SESSION_EXPIRED);
+        this.client = new ZookeeperClient(connectAddress, sessionTimeout, this, ZookeeperConstatns.DEFAULT_RECONNECT_DELAY_WHEN_SESSION_EXPIRED);
         this.client.connect();
     }
 
@@ -249,7 +251,7 @@ public class ZookeeperClusterDataManager implements ClusterDataManager, Zookeepe
         logger.info("syncPullCollectorCluster() started.");
         synchronized (this) {
             Map<String, byte[]> map = clusterDataManagerHelper.syncPullCollectorCluster(client, PINPOINT_COLLECTOR_CLUSTER_PATH);
-            if (Collections.EMPTY_MAP == map) {
+            if (MapUtils.isEmpty(map)) {
                 return false;
             }
 

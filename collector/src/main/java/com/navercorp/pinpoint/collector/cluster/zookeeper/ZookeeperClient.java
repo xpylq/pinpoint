@@ -16,7 +16,7 @@
 
 package com.navercorp.pinpoint.collector.cluster.zookeeper;
 
-import com.navercorp.pinpoint.collector.cluster.zookeeper.exception.PinpointZookeeperException;
+import com.navercorp.pinpoint.common.server.cluster.zookeeper.exception.PinpointZookeeperException;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,6 +36,8 @@ public interface ZookeeperClient {
 
     String createNode(String zNodePath, byte[] data) throws PinpointZookeeperException, InterruptedException;
 
+    String createNode(String zNodePath, byte[] data, boolean throwExceptionIfNodeExists) throws PinpointZookeeperException, InterruptedException;
+
     byte[] getData(String path) throws PinpointZookeeperException, InterruptedException;
 
     void setData(String path, byte[] data) throws PinpointZookeeperException, InterruptedException;
@@ -50,4 +52,4 @@ public interface ZookeeperClient {
 
     void close();
 
- }
+}
