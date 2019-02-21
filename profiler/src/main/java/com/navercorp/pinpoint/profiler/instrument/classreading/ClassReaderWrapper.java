@@ -72,6 +72,7 @@ public class ClassReaderWrapper {
     // classloader and class internal name.
     public ClassReaderWrapper(final ClassLoader classLoader, final String classInternalName, final boolean readAttributes) throws IOException {
         Assert.requireNonNull(classInternalName, "classInternalName must not be null");
+
         ClassLoader cl = classLoader;
         if (cl == null) {
             cl = ClassLoader.getSystemClassLoader();
@@ -81,7 +82,8 @@ public class ClassReaderWrapper {
             }
         }
 
-        final InputStream in = cl.getResourceAsStream(classInternalName + ".class");
+        final String classPath = classInternalName.concat(".class");
+        final InputStream in = cl.getResourceAsStream(classPath);
         if (in == null) {
             throw new IOException("not found class. classLoader=" + cl + ", classInternalName=" + classInternalName);
         }
@@ -243,7 +245,7 @@ public class ClassReaderWrapper {
         StringBuilder sb = new StringBuilder().append("{");
         sb.append("access=").append(classReader.getAccess()).append(", ");
         sb.append("name=").append(classReader.getClassName()).append(", ");
-        sb.append("interfaces=").append(Arrays.asList(classReader.getInterfaces())).append(", ");
+        sb.append("interfaces=").append(Arrays.toString(classReader.getInterfaces())).append(", ");
         sb.append("super=").append(classReader.getSuperName());
         sb.append("}");
         return sb.toString();

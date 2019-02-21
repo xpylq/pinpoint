@@ -131,15 +131,15 @@ public class ASMAspectWeaverTest {
             public Class<?> loadClass(String name) throws ClassNotFoundException {
                 if (name.equals(originalName)) {
                     try {
-                        final String jvmClassName = "/" + JavaAssistUtils.javaNameToJvmName(name) + ".class";
+                        final String jvmClassName = "/" + JavaAssistUtils.javaClassNameToJvmResourceName(name);
                         final InputStream stream = getClass().getResourceAsStream(jvmClassName);
                         byte[] classBytes = IOUtils.toByteArray(stream);
                         final ClassReader cr = new ClassReader(classBytes);
                         final ClassNode classNode = new ClassNode();
                         cr.accept(classNode, 0);
 
-                        final ASMClassNodeAdapter sourceClassNode = new ASMClassNodeAdapter(pluginContext, defaultClassLoader, classNode);
-                        final ASMClassNodeAdapter adviceClassNode = ASMClassNodeAdapter.get(pluginContext, defaultClassLoader, JavaAssistUtils.javaNameToJvmName(aspectName));
+                        final ASMClassNodeAdapter sourceClassNode = new ASMClassNodeAdapter(pluginContext, defaultClassLoader, null, classNode);
+                        final ASMClassNodeAdapter adviceClassNode = ASMClassNodeAdapter.get(pluginContext, defaultClassLoader, null, JavaAssistUtils.javaNameToJvmName(aspectName));
 
                         final ASMAspectWeaver aspectWeaver = new ASMAspectWeaver();
                         aspectWeaver.weaving(sourceClassNode, adviceClassNode);

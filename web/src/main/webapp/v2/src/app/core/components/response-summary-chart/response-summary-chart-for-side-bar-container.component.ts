@@ -75,6 +75,7 @@ export class ResponseSummaryChartForSideBarContainerComponent implements OnInit,
             })
         ).subscribe((target: ISelectedTarget) => {
             this.yMax = -1;
+            this.selectedAgent = '';
             this.selectedTarget = target;
             this.hiddenComponent = target.isMerged;
             if (target.isMerged === false) {
@@ -101,18 +102,20 @@ export class ResponseSummaryChartForSideBarContainerComponent implements OnInit,
     }
     private loadResponseSummaryChartData(from?: number, to?: number): void {
         const target = this.getTargetInfo();
-        if (this.isAllAgent() && arguments.length !== 2) {
-            this.passDownChartData(this.agentHistogramDataService.makeChartDataForResponseSummary(target.histogram, this.getChartYMax()));
-        } else {
-            this.agentHistogramDataService.getData(target.key, target.applicationName, target.serviceTypeCode, this.serverMapData, from, to).subscribe((chartData: any) => {
-                const chartDataForAgent = this.isAllAgent() ? chartData['histogram'] : chartData['agentHistogram'][this.selectedAgent];
-                this.passDownChartData(this.agentHistogramDataService.makeChartDataForResponseSummary(chartDataForAgent, this.getChartYMax()));
-            }, (error: IServerErrorFormat) => {
-                this.hasRequestError = true;
-                this.hiddenChart = true;
-                this.setDisable(false);
-                this.changeDetector.detectChanges();
-            });
+        if (target) {
+            if (this.isAllAgent() && arguments.length !== 2) {
+                this.passDownChartData(this.agentHistogramDataService.makeChartDataForResponseSummary(target.histogram, this.getChartYMax()));
+            } else {
+                this.agentHistogramDataService.getData(target.key, target.applicationName, target.serviceTypeCode, this.serverMapData, from, to).subscribe((chartData: any) => {
+                    const chartDataForAgent = this.isAllAgent() ? chartData['histogram'] : chartData['agentHistogram'][this.selectedAgent];
+                    this.passDownChartData(this.agentHistogramDataService.makeChartDataForResponseSummary(chartDataForAgent, this.getChartYMax()));
+                }, (error: IServerErrorFormat) => {
+                    this.hasRequestError = true;
+                    this.hiddenChart = true;
+                    this.setDisable(false);
+                    this.changeDetector.detectChanges();
+                });
+            }
         }
     }
     private passDownChartData(chartData: any): void {

@@ -4,10 +4,20 @@ import { UrlPath } from 'app/shared/models';
 @Injectable()
 export class ComponentDefaultSettingDataService {
 
-    private inboundList = ['1', '2', '3', '4'];
-    private outboundList = ['1', '2', '3', '4'];
+    private inboundList = [1, 2, 3, 4];
+    private outboundList = [1, 2, 3, 4];
     private periodList = {
         [UrlPath.MAIN]: [
+            new Period(5, 'Last'),
+            new Period(20),
+            new Period(60),
+            new Period(180),
+            new Period(360),
+            new Period(720),
+            new Period(1440),
+            new Period(2880)
+        ],
+        [UrlPath.SCATTER_FULL_SCREEN_MODE]: [
             new Period(5, 'Last'),
             new Period(20),
             new Period(60),
@@ -50,14 +60,14 @@ export class ComponentDefaultSettingDataService {
         ['D MMM YYYY h:mm:ss a', 'D MMM YYYY h:mm:ss a Z', 'D MMM YYYY h:mm:ss SSS a', 'D MMM YYYY', 'h:mm:ss a', 'D MMM', 'h:mm a']
     ];
     constructor() {}
-    getInboundList(): string[] {
+    getInboundList(): number[] {
         return this.inboundList;
     }
-    getOutboundList(): string[] {
+    getOutboundList(): number[] {
         return this.outboundList;
     }
     getPeriodList(path: string): Period[] {
-        return this.periodList[path];
+        return this.periodList[path] || this.periodList[UrlPath.MAIN] ;
     }
     getSystemDefaultPeriod(): Period {
         return this.periodList[UrlPath.MAIN][0];
@@ -65,10 +75,10 @@ export class ComponentDefaultSettingDataService {
     getSystemDefaultTransactionViewPeriod(): Period {
         return this.periodList[UrlPath.TRANSACTION_VIEW][0];
     }
-    getSystemDefaultInbound(): string {
+    getSystemDefaultInbound(): number {
         return this.inboundList[0];
     }
-    getSystemDefaultOutbound(): string {
+    getSystemDefaultOutbound(): number {
         return this.outboundList[0];
     }
     getMaxPeriodTime(): number {
