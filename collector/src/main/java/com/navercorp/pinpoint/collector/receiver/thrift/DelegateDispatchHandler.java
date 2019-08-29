@@ -17,6 +17,7 @@
 package com.navercorp.pinpoint.collector.receiver.thrift;
 
 import com.navercorp.pinpoint.collector.manage.HandlerManager;
+import com.navercorp.pinpoint.collector.receiver.DispatchHandler;
 import com.navercorp.pinpoint.common.server.util.AcceptedTimeService;
 import com.navercorp.pinpoint.io.request.ServerRequest;
 import com.navercorp.pinpoint.io.request.ServerResponse;
@@ -32,7 +33,7 @@ import java.util.Objects;
 public class DelegateDispatchHandler implements DispatchHandler {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private AcceptedTimeService acceptedTimeService;
+    private final AcceptedTimeService acceptedTimeService;
     private final DispatchHandler delegate;
 
     private final HandlerManager handlerManager;

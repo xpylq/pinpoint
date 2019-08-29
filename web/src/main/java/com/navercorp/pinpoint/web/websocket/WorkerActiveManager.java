@@ -151,7 +151,9 @@ public class WorkerActiveManager {
 
         @Override
         public void run() {
-            logger.info("AgentCheckTimerTask started.");
+            if(logger.isDebugEnabled()) {
+                logger.debug("AgentCheckTimerTask started.");
+            }
 
             List<AgentInfo> agentInfoList = Collections.emptyList();
             try {
@@ -175,6 +177,7 @@ public class WorkerActiveManager {
                     }
                 }
             } finally {
+                final Timer timer = WorkerActiveManager.this.timer;
                 if (timer != null && onAgentCheckTimerTask.get() && !isStopped.get()) {
                     TimerTask agentCheckTimerTask = timerTaskDecorator.decorate(new AgentCheckTimerTask());
                     timer.schedule(agentCheckTimerTask, DEFAULT_AGENT_CHECK_DELAY);

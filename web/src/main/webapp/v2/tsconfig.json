@@ -1,6 +1,9 @@
 {
     "compileOnSave": false,
     "compilerOptions": {
+        "downlevelIteration": true,
+        "importHelpers": true,
+        "module": "esnext",
         "outDir": "./dist/out-tsc",
         "baseUrl": "src",
         "sourceMap": true,
@@ -14,7 +17,9 @@
         ],
         "lib": [
             "es2017",
-            "dom"
+            "dom",
+            "dom.iterable",
+            "esnext.array"
         ],
         "preserveSymlinks": true,
         "forceConsistentCasingInFileNames": true,

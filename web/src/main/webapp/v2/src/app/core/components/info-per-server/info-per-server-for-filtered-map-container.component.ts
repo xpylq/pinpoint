@@ -1,33 +1,31 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 import { Subject } from 'rxjs';
+import { filter, map, tap } from 'rxjs/operators';
 
 import {
     StoreHelperService,
-    NewUrlStateNotificationService,
     UrlRouteManagerService,
     AnalyticsService,
     TRACKED_EVENT_LIST
 } from 'app/shared/services';
 import { Actions } from 'app/shared/store';
-import { UrlPath, UrlPathId } from 'app/shared/models';
-import { ServerMapData } from 'app/core/components/server-map/class/server-map-data.class';
+import { ServerMapData, IShortNodeInfo } from 'app/core/components/server-map/class/server-map-data.class';
 
 @Component({
     selector: 'pp-info-per-server-for-filtered-map-container',
     templateUrl: './info-per-server-for-filtered-map-container.component.html',
     styleUrls: ['./info-per-server-for-filtered-map-container.component.css'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
     animations: [
         trigger('listAnimationTrigger', [
             state('start', style({
                 left: '0px'
             })),
             state('end', style({
-                left: '-809px'
+                left: '-825px'
             })),
             transition('* => *', [
-                animate('0.2s 0.5s ease-out')
+                animate('0.2s 0s ease-out')
             ])
         ]),
         trigger('chartAnimationTrigger', [
@@ -35,7 +33,7 @@ import { ServerMapData } from 'app/core/components/server-map/class/server-map-d
                 left: '0px'
             })),
             state('end', style({
-                left: '-461px'
+                left: '-477px'
             })),
             transition('* => *', [
                 animate('0.2s 0s ease-out')
@@ -44,20 +42,21 @@ import { ServerMapData } from 'app/core/components/server-map/class/server-map-d
     ]
 })
 export class InfoPerServerForFilteredMapContainerComponent implements OnInit, OnDestroy {
-    private unsubscribe: Subject<null> = new Subject();
+    private unsubscribe = new Subject<void>();
+
     selectedTarget: ISelectedTarget;
     serverMapData: ServerMapData;
     agentHistogramData: any;
-    selectedAgent = '';
+    selectedAgent: string;
     listAnimationTrigger = 'start';
     chartAnimationTrigger = 'start';
+
     constructor(
-        private changeDetector: ChangeDetectorRef,
         private storeHelperService: StoreHelperService,
-        private newUrlStateNotificationService: NewUrlStateNotificationService,
         private urlRouteManagerService: UrlRouteManagerService,
         private analyticsService: AnalyticsService,
     ) {}
+
     ngOnInit() {
         this.connectStore();
     }
@@ -65,69 +64,69 @@ export class InfoPerServerForFilteredMapContainerComponent implements OnInit, On
         this.unsubscribe.next();
         this.unsubscribe.complete();
     }
+
     private connectStore(): void {
-        this.storeHelperService.getServerMapTargetSelected(this.unsubscribe).subscribe((target: ISelectedTarget) => {
-            this.selectedTarget = target;
-        });
         this.storeHelperService.getServerMapData(this.unsubscribe).subscribe((serverMapData: ServerMapData) => {
             this.serverMapData = serverMapData;
         });
-        this.storeHelperService.getInfoPerServerState(this.unsubscribe).subscribe((visibleState: boolean) => {
-            if (this.selectedTarget && this.selectedTarget.isNode) {
-                if (visibleState === true) {
-                    const node = this.serverMapData.getNodeData(this.selectedTarget.node[0]);
-                    this.show();
-                    this.agentHistogramData = {
-                        serverList: node.serverList,
-                        agentHistogram: node.agentHistogram,
-                        agentTimeSeriesHistogram: node.agentTimeSeriesHistogram,
-                        isWas: node.isWas
-                    };
-                    this.changeDetector.detectChanges();
-                    this.storeHelperService.dispatch(new Actions.UpdateServerList(this.agentHistogramData));
-                    this.onSelectAgent(this.getFirstAgent());
-                    this.storeHelperService.dispatch(new Actions.ChangeInfoPerServerVisibleState(true));
-                } else {
-                    this.hide();
-                    this.changeDetector.detectChanges();
-                    this.storeHelperService.dispatch(new Actions.ChangeInfoPerServerVisibleState(false));
-                }
-            }
+
+        this.storeHelperService.getServerMapTargetSelected(this.unsubscribe).pipe(
+            filter((target: ISelectedTarget) => !!target)
+        ).subscribe((target: ISelectedTarget) => {
+            this.selectedTarget = target;
+            this.selectedAgent = '';
+        });
+
+        this.storeHelperService.getInfoPerServerState(this.unsubscribe).pipe(
+            filter(() => this.selectedTarget && this.selectedTarget.isNode),
+            filter((visibleState: boolean) => visibleState ? true : (this.hide(), false)),
+            map(() => this.serverMapData.getNodeData(this.selectedTarget.node[0])),
+            tap(({serverList, agentHistogram, agentTimeSeriesHistogram, isWas}: INodeInfo | IShortNodeInfo) => {
+                this.agentHistogramData = {
+                    serverList,
+                    agentHistogram,
+                    agentTimeSeriesHistogram,
+                    isWas
+                };
+            })
+        ).subscribe(() => {
+            this.show();
+            this.onSelectAgent(this.selectedAgent ? this.selectedAgent : this.getFirstAgent());
         });
     }
+
     private hide(): void {
         this.listAnimationTrigger = 'start';
         this.chartAnimationTrigger = 'start';
     }
+
     private show(): void {
         this.listAnimationTrigger = 'end';
         this.chartAnimationTrigger = 'end';
     }
+
     isWAS(): boolean {
         return this.selectedTarget.isWAS;
     }
+
     getFirstAgent(): string {
         const firstKey = Object.keys(this.agentHistogramData['serverList']).sort()[0];
+
         return Object.keys(this.agentHistogramData['serverList'][firstKey]['instanceList']).sort()[0];
     }
-    onSelectAgent(agentName: string): void {
+
+    onSelectAgent(agent: string): void {
         this.analyticsService.trackEvent(TRACKED_EVENT_LIST.SELECT_AGENT);
         this.storeHelperService.dispatch(new Actions.ChangeAgentForServerList({
-            agent: agentName,
-            responseSummary: this.agentHistogramData['agentHistogram'][agentName],
-            load: this.agentHistogramData['agentTimeSeriesHistogram'][agentName]
+            agent,
+            responseSummary: this.agentHistogramData['agentHistogram'][agent],
+            load: this.agentHistogramData['agentTimeSeriesHistogram'][agent]
         }));
-        this.selectedAgent = agentName;
-        this.changeDetector.detectChanges();
+        this.selectedAgent = agent;
     }
+
     onOpenInspector(agentName: string): void {
         this.analyticsService.trackEvent(TRACKED_EVENT_LIST.OPEN_INSPECTOR_WITH_AGENT);
-        this.urlRouteManagerService.openPage([
-            UrlPath.INSPECTOR,
-            this.newUrlStateNotificationService.getPathValue(UrlPathId.APPLICATION).getUrlStr(),
-            this.newUrlStateNotificationService.getPathValue(UrlPathId.PERIOD).getValueWithTime(),
-            this.newUrlStateNotificationService.getPathValue(UrlPathId.END_TIME).getEndTime(),
-            agentName
-        ]);
+        this.urlRouteManagerService.openInspectorPage(false, agentName);
     }
 }

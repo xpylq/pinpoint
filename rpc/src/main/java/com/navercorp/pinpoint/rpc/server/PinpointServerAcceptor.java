@@ -26,8 +26,7 @@ import com.navercorp.pinpoint.rpc.PipelineFactory;
 import com.navercorp.pinpoint.rpc.cluster.ClusterOption;
 import com.navercorp.pinpoint.rpc.packet.ServerClosePacket;
 import com.navercorp.pinpoint.rpc.server.handler.ServerStateChangeEventHandler;
-import com.navercorp.pinpoint.rpc.stream.DisabledServerStreamChannelMessageListener;
-import com.navercorp.pinpoint.rpc.stream.ServerStreamChannelMessageListener;
+import com.navercorp.pinpoint.rpc.stream.ServerStreamChannelMessageHandler;
 import com.navercorp.pinpoint.rpc.util.LoggerFactorySetup;
 import com.navercorp.pinpoint.rpc.util.TimerFactory;
 
@@ -40,6 +39,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.group.ChannelGroup;
@@ -81,7 +81,7 @@ public class PinpointServerAcceptor implements PinpointServerConfig {
 
     private ServerMessageListenerFactory messageListenerFactory = new LoggingServerMessageListenerFactory();
 
-    private ServerStreamChannelMessageListener serverStreamChannelMessageListener = DisabledServerStreamChannelMessageListener.INSTANCE;
+    private ServerStreamChannelMessageHandler serverStreamChannelMessageHandler = ServerStreamChannelMessageHandler.DISABLED_INSTANCE;
     private List<ServerStateChangeEventHandler> stateChangeEventHandler = new ArrayList<ServerStateChangeEventHandler>();
 
     private final Timer healthCheckTimer;
@@ -244,14 +244,12 @@ public class PinpointServerAcceptor implements PinpointServerConfig {
     }
 
     @Override
-    public ServerStreamChannelMessageListener getStreamMessageListener() {
-        return serverStreamChannelMessageListener;
+    public ServerStreamChannelMessageHandler getServerStreamMessageHandler() {
+        return serverStreamChannelMessageHandler;
     }
 
-    public void setServerStreamChannelMessageListener(ServerStreamChannelMessageListener serverStreamChannelMessageListener) {
-        Assert.requireNonNull(serverStreamChannelMessageListener, "serverStreamChannelMessageListener must not be null");
-
-        this.serverStreamChannelMessageListener = serverStreamChannelMessageListener;
+    public void setServerStreamChannelMessageHandler(ServerStreamChannelMessageHandler serverStreamChannelMessageHandler) {
+        this.serverStreamChannelMessageHandler = Assert.requireNonNull(serverStreamChannelMessageHandler, "serverStreamChannelMessageHandler must not be null");
     }
 
     @Override
@@ -345,6 +343,17 @@ public class PinpointServerAcceptor implements PinpointServerConfig {
             pinpointServer.start();
 
             super.channelConnected(ctx, e);
+        }
+
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+            Channel channel = e.getChannel();
+            final boolean accept = channelConnectedFilter.accept(channel);
+            if (!accept) {
+                return;
+            } else {
+                super.exceptionCaught(ctx, e);
+            }
         }
 
         @Override

@@ -16,7 +16,7 @@
 
 package com.navercorp.pinpoint.collector.receiver.thrift.udp;
 
-import com.navercorp.pinpoint.collector.receiver.thrift.DispatchHandler;
+import com.navercorp.pinpoint.collector.receiver.DispatchHandler;
 import com.navercorp.pinpoint.io.request.DefaultMessage;
 import com.navercorp.pinpoint.io.request.DefaultServerRequest;
 import com.navercorp.pinpoint.io.request.Message;
@@ -73,7 +73,7 @@ public class SpanStreamUDPPacketHandlerFactory<T extends DatagramPacket> impleme
 
     // stateless
     private class DispatchPacket implements PacketHandler<T> {
-        private ServerResponse fake = new ServerResponse() {
+        private final ServerResponse fake = new ServerResponse() {
             @Override
             public void write(Object data) {
 

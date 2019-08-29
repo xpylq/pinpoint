@@ -3,9 +3,8 @@ import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
 
 import { UrlPathId } from 'app/shared/models';
-import { NewUrlStateNotificationService } from 'app/shared/services';
+import { NewUrlStateNotificationService, MessageQueueService, MESSAGE_TO } from 'app/shared/services';
 import { ActiveThreadDumpDetailInfoDataService } from './active-thread-dump-detail-info-data.service';
-import { ThreadDumpLogInteractionService, IParam } from './thread-dump-log-interaction.service';
 
 @Component({
     selector: 'pp-thread-dump-log-container',
@@ -13,15 +12,15 @@ import { ThreadDumpLogInteractionService, IParam } from './thread-dump-log-inter
     styleUrls: ['./thread-dump-log-container.component.css'],
 })
 export class ThreadDumpLogContainerComponent implements OnInit, OnDestroy {
-    @ViewChild('logDisplay') target: ElementRef;
+    @ViewChild('logDisplay', { static: true }) target: ElementRef;
     private unsubscribe: Subject<null> = new Subject();
     private applicationName: string;
     private agentId: string;
     showLoading = false;
     constructor(
         private newUrlStateNotificationService: NewUrlStateNotificationService,
-        private activeThreadDumpDetailInfoDataService: ActiveThreadDumpDetailInfoDataService,
-        private threadDumpLogInteractionService: ThreadDumpLogInteractionService
+        private messageQueueService: MessageQueueService,
+        private activeThreadDumpDetailInfoDataService: ActiveThreadDumpDetailInfoDataService
     ) {}
     ngOnInit() {
         this.newUrlStateNotificationService.onUrlStateChange$.pipe(
@@ -33,11 +32,13 @@ export class ThreadDumpLogContainerComponent implements OnInit, OnDestroy {
             this.applicationName = urlService.getPathValue(UrlPathId.APPLICATION).getApplicationName();
             this.agentId = urlService.getPathValue(UrlPathId.AGENT_ID);
         });
-        this.threadDumpLogInteractionService.onParam$.pipe(
-            takeUntil(this.unsubscribe)
-        ).subscribe((param: IParam) => {
+        this.messageQueueService.receiveMessage(this.unsubscribe, MESSAGE_TO.THREAD_DUMP_SET_PARAM).subscribe((param: any[]) => {
+            const threadParam = param[0] as {
+                threadName: string;
+                localTraceId: number;
+            };
             this.showLoading = true;
-            this.loadData(param.threadName, param.localTraceId);
+            this.loadData(threadParam.threadName, threadParam.localTraceId);
         });
     }
     private loadData(threadName: string, localTraceId: number): void {

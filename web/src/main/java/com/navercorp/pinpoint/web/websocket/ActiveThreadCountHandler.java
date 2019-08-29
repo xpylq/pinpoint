@@ -312,7 +312,7 @@ public class ActiveThreadCountHandler extends TextWebSocketHandler implements Pi
         private final long startTimeMillis;
         private final long delay;
 
-        private int times = 0;
+        private int times;
 
         public ActiveThreadTimerTask(long delay) {
             this(System.currentTimeMillis(), delay, 0);
@@ -327,7 +327,9 @@ public class ActiveThreadCountHandler extends TextWebSocketHandler implements Pi
         @Override
         public void run() {
             try {
-                logger.info("ActiveThreadTimerTask started.");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("ActiveThreadTimerTask started.");
+                }
 
                 Collection<PinpointWebSocketResponseAggregator> values = aggregatorRepository.values();
                 for (final PinpointWebSocketResponseAggregator aggregator : values) {
@@ -364,7 +366,9 @@ public class ActiveThreadCountHandler extends TextWebSocketHandler implements Pi
         @Override
         public void run() {
             try {
-                logger.info("HealthCheckTimerTask started.");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("HealthCheckTimerTask started.");
+                }
 
                 // check session state.
                 List<WebSocketSession> snapshot = filterHealthCheckSuccess(sessionRepository);

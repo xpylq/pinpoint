@@ -23,10 +23,7 @@ export class StoreHelperService {
     ) {
         this.dateFormatList = this.webAppSettingDataService.getDateFormatList();
     }
-    getURLPath(): Observable<string> {
-        return this.getObservable(STORE_KEY.URL_PATH);
-    }
-    getApplicationList(unsubscribe: Subject<void>): Observable<IApplication[]> {
+    getApplicationList(unsubscribe?: Subject<void>): Observable<IApplication[]> {
         return this.getObservable(STORE_KEY.APPLICATION_LIST, unsubscribe);
     }
     getFavoriteApplicationList(unsubscribe: Subject<void>): Observable<IApplication[]> {
@@ -67,9 +64,6 @@ export class StoreHelperService {
             distinctUntilChanged()
         );
     }
-    getHoverInfo(unsubscribe: Subject<void>): Observable<IHoveredInfo> {
-        return this.getObservable(STORE_KEY.HOVER_ON_INSPECTOR_CHARTS, unsubscribe);
-    }
     getServerMapTargetSelectedByList(unsubscribe: Subject<void>): Observable<any> {
         return this.getObservable(STORE_KEY.SERVER_MAP_TARGET_SELECTED_BY_LIST, unsubscribe).pipe(
             filter((target: any) => {
@@ -77,21 +71,11 @@ export class StoreHelperService {
             })
         );
     }
-    getAgentSelection<T>(unsubscribe: Subject<void>): Observable<T> {
+    getAgentSelection(unsubscribe: Subject<void>): Observable<string> {
         return this.getObservable(STORE_KEY.AGENT_SELECTION, unsubscribe);
     }
-    getAgentSelectionForServerList<T>(unsubscribe: Subject<void>): Observable<T> {
+    getAgentSelectionForServerList(unsubscribe: Subject<void>): Observable<IAgentSelection> {
         return this.getObservable(STORE_KEY.AGENT_SELECTION_FOR_SERVER_LIST, unsubscribe);
-    }
-    getRealTimeScatterChartRange(unsubscribe: Subject<void>): Observable<IScatterXRange> {
-        return this.getObservable(STORE_KEY.REAL_TIME_SCATTER_CHART, unsubscribe).pipe(
-            filter((range: IScatterXRange) => {
-                if (range && range.from && range.to && range.from !== -1 && range.to !== -1) {
-                    return true;
-                }
-                return false;
-            })
-        );
     }
     getScatterChartData<T>(unsubscribe: Subject<void>): Observable<T> {
         return this.getObservable(STORE_KEY.SCATTER_CHART, unsubscribe);
@@ -102,7 +86,7 @@ export class StoreHelperService {
     getServerMapLoadingState(unsubscribe: Subject<void>): Observable<string> {
         return this.getObservable(STORE_KEY.SERVER_MAP_LOADING_STATE, unsubscribe);
     }
-    getServerMapTargetSelected<ISelectedTarget>(unsubscribe: Subject<void>): Observable<ISelectedTarget> {
+    getServerMapTargetSelected(unsubscribe: Subject<void>): Observable<ISelectedTarget> {
         return this.getObservable(STORE_KEY.SERVER_MAP_TARGET_SELECTED, unsubscribe);
     }
     getTransactionData(unsubscribe: Subject<void>): Observable<ITransactionMetaData> {
@@ -114,14 +98,11 @@ export class StoreHelperService {
     getServerListData(unsubscribe: Subject<void>): Observable<any> {
         return this.getObservable(STORE_KEY.SERVER_LIST, unsubscribe);
     }
-    getAgentInfo(unsubscribe?: Subject<void>): Observable<IServerAndAgentData> {
-        return this.getObservable(STORE_KEY.AGENT_INFO, unsubscribe);
+    getResponseSummaryChartYMax(unsubscribe: Subject<void>): Observable<number> {
+        return this.getObservable(STORE_KEY.RESPONSE_SUMMARY_CHART_Y_MAX, unsubscribe);
     }
     getLoadChartYMax(unsubscribe: Subject<void>): Observable<number> {
         return this.getObservable(STORE_KEY.LOAD_CHART_Y_MAX, unsubscribe);
-    }
-    getResponseSummaryChartYMax(unsubscribe: Subject<void>): Observable<number> {
-        return this.getObservable(STORE_KEY.RESPONSE_SUMMARY_CHART_Y_MAX, unsubscribe);
     }
     getServerMapDisableState(unsubscribe: Subject<void>): Observable<boolean> {
         return this.store.pipe(
@@ -149,6 +130,18 @@ export class StoreHelperService {
             takeUntil(unsubscribe),
             select(selectTimelineSelectedTime),
         );
+    }
+    getRange(unsubscribe: Subject<void>): Observable<number[]> {
+        return this.getObservable(STORE_KEY.RANGE, unsubscribe);
+    }
+    getApplicationInspectorChartLayoutInfo(unsubscribe: Subject<void>): Observable<IChartLayoutInfoResponse> {
+        return this.getObservable(STORE_KEY.APPLICATION_INSPECTOR_CHART_LAYOUT, unsubscribe);
+    }
+    getAgentInspectorChartLayoutInfo(unsubscribe: Subject<void>): Observable<IChartLayoutInfoResponse> {
+        return this.getObservable(STORE_KEY.AGENT_INSPECTOR_CHART_LAYOUT, unsubscribe);
+    }
+    getTransactionViewType(unsubscribe: Subject<void>): Observable<string> {
+        return this.getObservable(STORE_KEY.TRANSACTION_VIEW_TYPE, unsubscribe);
     }
     getObservable(key: string, unsubscribe?: Subject<void>): Observable<any> {
         return iif(

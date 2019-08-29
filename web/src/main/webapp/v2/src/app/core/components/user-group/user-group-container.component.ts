@@ -2,8 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 
-import { WebAppSettingDataService, TranslateReplaceService } from 'app/shared/services';
-import { UserGroupInteractionService } from './user-group-interaction.service';
+import { WebAppSettingDataService, TranslateReplaceService, MessageQueueService, MESSAGE_TO, AnalyticsService, TRACKED_EVENT_LIST } from 'app/shared/services';
 import { UserGroupDataService, IUserGroup, IUserGroupCreated, IUserGroupDeleted } from './user-group-data.service';
 import { isThatType } from 'app/core/utils/util';
 
@@ -22,7 +21,7 @@ export class UserGroupContainerComponent implements OnInit {
     i18nText = {
         SEARCH_INPUT_GUIDE: ''
     };
-    USER_GROUP_NAME_MIN_LENGTH = 3;
+    USER_GROUP_NAME_MIN_LENGTH = 4;
     SEARCH_MIN_LENGTH = 2;
     searchUseEnter = true;
     userGroupList: IUserGroup[] = [];
@@ -33,10 +32,11 @@ export class UserGroupContainerComponent implements OnInit {
     selectedUserGroupId = '';
     constructor(
         private webAppSettingDataService: WebAppSettingDataService,
-        private userGroupDataService: UserGroupDataService,
         private translateService: TranslateService,
         private translateReplaceService: TranslateReplaceService,
-        private userGroupInteractionService: UserGroupInteractionService
+        private messageQueueService: MessageQueueService,
+        private userGroupDataService: UserGroupDataService,
+        private analyticsService: AnalyticsService,
     ) {}
     ngOnInit() {
         this.getI18NText();
@@ -49,12 +49,14 @@ export class UserGroupContainerComponent implements OnInit {
         forkJoin(
             this.translateService.get('COMMON.MIN_LENGTH'),
             this.translateService.get('COMMON.REQUIRED'),
-            this.translateService.get('CONFIGURATION.COMMON.NAME')
-        ).subscribe(([minLengthMessage, requiredMessage, nameLabel]: string[]) => {
+            this.translateService.get('CONFIGURATION.COMMON.NAME'),
+            this.translateService.get('CONFIGURATION.USER_GROUP.VALIDATION'),
+        ).subscribe(([minLengthMessage, requiredMessage, nameLabel, validationGuide]: string[]) => {
             this.i18nGuide = {
                 userGroupName: {
                     required: this.translateReplaceService.replace(requiredMessage, nameLabel),
-                    minlength: this.translateReplaceService.replace(minLengthMessage, this.USER_GROUP_NAME_MIN_LENGTH)
+                    minlength: this.translateReplaceService.replace(minLengthMessage, this.USER_GROUP_NAME_MIN_LENGTH),
+                    valueRule: validationGuide
                 }
             };
 
@@ -88,8 +90,12 @@ export class UserGroupContainerComponent implements OnInit {
                 this.hideProcessing();
             } else {
                 if (response.result === 'SUCCESS') {
-                    this.userGroupInteractionService.setSelectedUserGroup('');
+                    this.messageQueueService.sendMessage({
+                        to: MESSAGE_TO.USER_GROUP_SELECTED_USER_GROUP,
+                        param: ['']
+                    });
                     this.getUserGroupList(this.makeUserGroupQuery());
+                    this.analyticsService.trackEvent(TRACKED_EVENT_LIST.REMOVE_USER_GROUP);
                 } else {
                     this.hideProcessing();
                 }
@@ -109,6 +115,7 @@ export class UserGroupContainerComponent implements OnInit {
                     id: newUserGroupName,
                     number: data.number
                 });
+                this.analyticsService.trackEvent(TRACKED_EVENT_LIST.CREATE_USER_GROUP);
             }
             this.hideProcessing();
         }, (error: IServerErrorFormat) => {
@@ -121,10 +128,15 @@ export class UserGroupContainerComponent implements OnInit {
     }
     onShowCreateUserPopup(): void {
         this.showCreate = true;
+        this.analyticsService.trackEvent(TRACKED_EVENT_LIST.SHOW_USER_GROUP_CREATION_POPUP);
     }
     onSelectUserGroup(userGroupId: string): void {
         this.selectedUserGroupId = userGroupId;
-        this.userGroupInteractionService.setSelectedUserGroup(userGroupId);
+        this.messageQueueService.sendMessage({
+            to: MESSAGE_TO.USER_GROUP_SELECTED_USER_GROUP,
+            param: [userGroupId]
+        });
+        this.analyticsService.trackEvent(TRACKED_EVENT_LIST.SELECT_USER_GROUP);
     }
     onCloseErrorMessage(): void {
         this.errorMessage = '';
@@ -132,11 +144,13 @@ export class UserGroupContainerComponent implements OnInit {
     onReload(): void {
         this.showProcessing();
         this.getUserGroupList(this.makeUserGroupQuery());
+        this.analyticsService.trackEvent(TRACKED_EVENT_LIST.RELOAD_USER_GROUP_LIST);
     }
     onSearch(query: string): void {
         this.showProcessing();
         this.searchQuery = query;
         this.getUserGroupList(this.makeUserGroupQuery());
+        this.analyticsService.trackEvent(TRACKED_EVENT_LIST.SEARCH_USER_GROUP);
     }
     private showProcessing(): void {
         this.useDisable = true;

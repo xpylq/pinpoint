@@ -18,7 +18,7 @@ package com.navercorp.pinpoint.collector.receiver.thrift.udp;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import com.navercorp.pinpoint.bootstrap.context.TraceId;
-import com.navercorp.pinpoint.collector.receiver.thrift.DispatchHandler;
+import com.navercorp.pinpoint.collector.receiver.DispatchHandler;
 import com.navercorp.pinpoint.collector.util.DatagramPacketFactory;
 import com.navercorp.pinpoint.collector.util.DefaultObjectPool;
 import com.navercorp.pinpoint.collector.util.ObjectPool;
@@ -30,10 +30,9 @@ import com.navercorp.pinpoint.profiler.context.DefaultSpanChunk;
 import com.navercorp.pinpoint.profiler.context.Span;
 import com.navercorp.pinpoint.profiler.context.SpanChunk;
 import com.navercorp.pinpoint.profiler.context.SpanEvent;
-import com.navercorp.pinpoint.profiler.context.compress.Context;
-import com.navercorp.pinpoint.profiler.context.compress.SpanPostProcessor;
-import com.navercorp.pinpoint.profiler.context.compress.SpanPostProcessorV1;
-import com.navercorp.pinpoint.profiler.context.id.DefaultTransactionIdEncoder;
+import com.navercorp.pinpoint.profiler.context.compress.SpanProcessor;
+import com.navercorp.pinpoint.profiler.context.compress.SpanProcessorV1;
+import com.navercorp.pinpoint.profiler.context.thrift.DefaultTransactionIdEncoder;
 import com.navercorp.pinpoint.profiler.context.id.Shared;
 import com.navercorp.pinpoint.profiler.context.id.TraceRoot;
 import com.navercorp.pinpoint.profiler.context.id.TransactionIdEncoder;
@@ -70,10 +69,10 @@ import static org.mockito.Mockito.mock;
  */
 public class SpanStreamUDPSenderTest {
 
-    private String applicationName = "appName";
-    private String agentId = "agentId";
-    private long agentStartTime = 0;
-    private ServiceType applicationServiceType = ServiceType.STAND_ALONE;
+    private final String applicationName = "appName";
+    private final String agentId = "agentId";
+    private final long agentStartTime = 0;
+    private final ServiceType applicationServiceType = ServiceType.STAND_ALONE;
 
     private static MessageHolderDispatchHandler messageHolder;
     private static UDPReceiver receiver = null;
@@ -83,7 +82,7 @@ public class SpanStreamUDPSenderTest {
     private final TestAwaitUtils awaitUtils = new TestAwaitUtils(100, 6000);
 
     private final TransactionIdEncoder transactionIdEncoder = new DefaultTransactionIdEncoder(agentId, agentStartTime);
-    private final SpanPostProcessor<Context> spanPostProcessor = new SpanPostProcessorV1();
+    private final SpanProcessor<TSpan, TSpanChunk> spanPostProcessor = new SpanProcessorV1();
     private final MessageConverter<TBase<?, ?>> messageConverter
             = new SpanThriftMessageConverter(applicationName, agentId, agentStartTime, applicationServiceType.getCode(),
             transactionIdEncoder, spanPostProcessor);
@@ -285,7 +284,7 @@ public class SpanStreamUDPSenderTest {
 
         private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-        private List<ServerRequest> messageHolder = new ArrayList<>();
+        private final List<ServerRequest> messageHolder = new ArrayList<>();
 
 
         @Override

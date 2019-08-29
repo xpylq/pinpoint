@@ -16,6 +16,8 @@
 
 package com.navercorp.pinpoint.collector.dao.hbase.statistics;
 
+import com.navercorp.pinpoint.common.hbase.HbaseColumnFamily;
+
 import com.sematext.hbase.wd.RowKeyDistributorByHashPrefix;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Increment;
@@ -36,6 +38,10 @@ import java.util.Map;
 public class RowKeyMerge {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final byte[] family;
+
+    public RowKeyMerge(HbaseColumnFamily columnFamily) {
+        this(columnFamily.getName());
+    }
 
     public RowKeyMerge(byte[] family) {
         if (family == null) {
@@ -66,18 +72,21 @@ public class RowKeyMerge {
 
     private Increment createIncrement(Map.Entry<RowKey, List<ColumnName>> rowKeyEntry, RowKeyDistributorByHashPrefix rowKeyDistributorByHashPrefix) {
         RowKey rowKey = rowKeyEntry.getKey();
-        byte[] key = null;
-        if (rowKeyDistributorByHashPrefix == null) {
-            key = rowKey.getRowKey();
-        } else {
-            key = rowKeyDistributorByHashPrefix.getDistributedKey(rowKey.getRowKey());
-        }
+        byte[] key = getRowKey(rowKey, rowKeyDistributorByHashPrefix);
         final Increment increment = new Increment(key);
         for (ColumnName columnName : rowKeyEntry.getValue()) {
             increment.addColumn(family, columnName.getColumnName(), columnName.getCallCount());
         }
         logger.trace("create increment row:{}, column:{}", rowKey, rowKeyEntry.getValue());
         return increment;
+    }
+
+    private byte[] getRowKey(RowKey rowKey, RowKeyDistributorByHashPrefix rowKeyDistributorByHashPrefix) {
+        if (rowKeyDistributorByHashPrefix == null) {
+            return rowKey.getRowKey();
+        } else {
+            return rowKeyDistributorByHashPrefix.getDistributedKey(rowKey.getRowKey());
+        }
     }
 
     private Map<TableName, Map<RowKey, List<ColumnName>>> mergeRowKeys(Map<RowInfo, Long> data) {

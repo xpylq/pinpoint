@@ -5,12 +5,12 @@
     position: absolute;
     top: 0px;
     left: 0px;
-    width: 461px;
+    width: 477px;
     border-left: 1px solid #e5e8f0;
     background: #fff;
     height: 100%;
-    overflow-y: auto;
     overflow-x: hidden;
+    overflow-y: hidden;
 }
 .l-title-group2 {
     display: flex;
@@ -51,13 +51,16 @@
     transform:translateY(-50%);
 }
 .l-contents-group {
-    padding-bottom: 16px;
+    height: calc(100vh - 50px);
     overflow-y: auto;
     overflow-x: hidden;
     margin-top: 51px;
 }
 .l-chart-group-list {
     flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: calc(100vh - 150px);
 }
 
 .l-sidemenu3 {
@@ -66,9 +69,10 @@
     width: 348px;
     background: #f8f9fb;
     border: none;
+    border-left: 1px solid #e5e8f0;
     position: absolute;
     height: 100%;
-    overflow-y: auto;
+    overflow-y: hidden;
     overflow-x: hidden;
 }
 .l-title-group3 {
@@ -77,12 +81,13 @@
     align-items: center;
     height: 64px;
     padding: 0 25px;
+    margin-bottom: 37px;
     position: relative;
 }
 .l-title-group3 .fas {
     font-size: 14px;
-    width: 33px;
-    height: 33px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     background: #4a8fd2;
     color: #fff;
@@ -96,11 +101,14 @@
     font-weight: 600;
     color: #666;
 }
-
+.l-sidemenu3 .l-contents-group {
+    height: calc(100vh - 150px);
+    padding-top: 0px;
+}
 
 .sidemenu {
     top: 0px;
-    left: -461px;
+    left: -477px;
 }
 .title-group2 {
     background-color: #f9fafc;
@@ -109,4 +117,5 @@
 hr {
     height: 1px;
     border-top: 1px solid #EAEEF4;
+    margin: 5px 0;
 }

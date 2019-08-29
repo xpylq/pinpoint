@@ -1,12 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject, iif, of, forkJoin } from 'rxjs';
-import { takeUntil, switchMap } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 
-import { TranslateReplaceService, WebAppSettingDataService } from 'app/shared/services';
-import { GroupMemberInteractionService } from 'app/core/components/group-member/group-member-interaction.service';
-import { UserGroupInteractionService } from 'app/core/components/user-group/user-group-interaction.service';
-import { PinpointUserInteractionService } from './pinpoint-user-interaction.service';
+import { TranslateReplaceService, WebAppSettingDataService, MessageQueueService, MESSAGE_TO, AnalyticsService, TRACKED_EVENT_LIST } from 'app/shared/services';
 import { PinpointUser } from './pinpoint-user-create-and-update.component';
 import { PinpointUserDataService, IPinpointUser, IPinpointUserResponse } from './pinpoint-user-data.service';
 import { isThatType } from 'app/core/utils/util';
@@ -52,23 +49,19 @@ export class PinpointUserContainerComponent implements OnInit, OnDestroy {
         private pinpointUserDataService: PinpointUserDataService,
         private translateService: TranslateService,
         private translateReplaceService: TranslateReplaceService,
-        private userGroupInteractionService: UserGroupInteractionService,
-        private groupMemberInteractionService: GroupMemberInteractionService,
-        private pinpointUserInteractionService: PinpointUserInteractionService
+        private messageQueueService: MessageQueueService,
+        private analyticsService: AnalyticsService,
     ) {}
     ngOnInit() {
         this.webAppSettingDataService.useUserEdit().subscribe((allowedUserEdit: boolean) => {
             this.allowedUserEdit = allowedUserEdit;
         });
-        this.userGroupInteractionService.onSelect$.pipe(
-            takeUntil(this.unsubscribe)
-        ).subscribe((userGroupId: string) => {
+        this.messageQueueService.receiveMessage(this.unsubscribe, MESSAGE_TO.USER_GROUP_SELECTED_USER_GROUP).subscribe((param: any[]) => {
+            const userGroupId = param[0];
             this.isUserGroupSelected = userGroupId === '' ? false : true;
         });
-        this.groupMemberInteractionService.onChangeGroupMember$.pipe(
-            takeUntil(this.unsubscribe)
-        ).subscribe((memberList: string[]) => {
-            this.groupMemberList = memberList;
+        this.messageQueueService.receiveMessage(this.unsubscribe, MESSAGE_TO.GROUP_MEMBER_SET_CURRENT_GROUP_MEMBERS).subscribe((param: any[]) => {
+            this.groupMemberList = param[0] as string[];
             this.hideProcessing();
         });
         this.getI18NText();
@@ -87,20 +80,36 @@ export class PinpointUserContainerComponent implements OnInit, OnDestroy {
             this.translateService.get('CONFIGURATION.COMMON.DEPARTMENT'),
             this.translateService.get('CONFIGURATION.COMMON.PHONE'),
             this.translateService.get('CONFIGURATION.COMMON.EMAIL'),
-        ).subscribe(([minLengthMessage, requiredMessage, idLabel, nameLabel, departmentLabel, phoneLabel, emailLabel]: string[]) => {
+            this.translateService.get('CONFIGURATION.PINPOINT_USER.USER_ID_VALIDATION'),
+            this.translateService.get('CONFIGURATION.PINPOINT_USER.NAME_VALIDATION'),
+            this.translateService.get('CONFIGURATION.PINPOINT_USER.DEPARTMENT_VALIDATION'),
+            this.translateService.get('CONFIGURATION.PINPOINT_USER.PHONE_VALIDATION'),
+            this.translateService.get('CONFIGURATION.PINPOINT_USER.EMAIL_VALIDATION'),
+        ).subscribe(([
+            minLengthMessage, requiredMessage, idLabel, nameLabel, departmentLabel, phoneLabel, emailLabel,
+            userIdValidation, nameValidation, departmentValidation, phoneValidation, emailValidation
+        ]: string[]) => {
             this.i18nGuide = {
                 userId: {
                     required: this.translateReplaceService.replace(requiredMessage, idLabel),
-                    minlength: this.translateReplaceService.replace(minLengthMessage, this.minLength.userId)
+                    valueRule: userIdValidation
                 },
                 name: {
                     required: this.translateReplaceService.replace(requiredMessage, nameLabel),
-                    minlength: this.translateReplaceService.replace(minLengthMessage, this.minLength.name)
+                    valueRule: nameValidation
                 },
-                phoneNumber: { required: this.translateReplaceService.replace(requiredMessage, phoneLabel) },
-                email: { required: this.translateReplaceService.replace(requiredMessage, emailLabel) }
+                department: {
+                    valueRule: departmentValidation
+                },
+                phoneNumber: {
+                    valueRule: phoneValidation
+                },
+                email: {
+                    minlength: emailValidation,
+                    maxlength: emailValidation,
+                    valueRule: emailValidation
+                }
             };
-
             this.i18nText.SEARCH_INPUT_GUIDE = this.translateReplaceService.replace(minLengthMessage, this.minLength.search);
 
             this.i18nLabel.USER_ID_LABEL = idLabel;
@@ -134,8 +143,11 @@ export class PinpointUserContainerComponent implements OnInit, OnDestroy {
         return this.groupMemberList.indexOf(userId) !== -1;
     }
     onAddUser(pinpointUserId: string): void {
-        this.showProcessing();
-        this.pinpointUserInteractionService.setAddPinpointUser(pinpointUserId);
+        this.messageQueueService.sendMessage({
+            to: MESSAGE_TO.PINPOINT_USER_ADD_USER,
+            param: [pinpointUserId]
+        });
+        this.analyticsService.trackEvent(TRACKED_EVENT_LIST.ADD_USER_TO_GROUP);
     }
     onCloseErrorMessage(): void {
         this.errorMessage = '';
@@ -143,15 +155,18 @@ export class PinpointUserContainerComponent implements OnInit, OnDestroy {
     onSearch(query: string): void {
         this.searchQuery = query;
         this.getPinpointUserList(this.searchQuery);
+        this.analyticsService.trackEvent(TRACKED_EVENT_LIST.SEARCH_USER);
     }
     onReload(): void {
         this.getPinpointUserList(this.searchQuery);
+        this.analyticsService.trackEvent(TRACKED_EVENT_LIST.RELOAD_USER_LIST);
     }
     onCloseCreateUserPopup(): void {
         this.showCreate = false;
     }
     onShowCreateUserPopup(): void {
         this.showCreate = true;
+        this.analyticsService.trackEvent(TRACKED_EVENT_LIST.SHOW_USER_CREATION_POPUP);
     }
     onCreatePinpointUser(pinpointUser: PinpointUser): void {
         this.pinpointUserDataService.create({
@@ -163,7 +178,10 @@ export class PinpointUserContainerComponent implements OnInit, OnDestroy {
         } as IPinpointUser).subscribe((response: IPinpointUserResponse | IServerErrorShortFormat) => {
             isThatType<IServerErrorShortFormat>(response, 'errorCode', 'errorMessage')
                 ? this.errorMessage = response.errorMessage
-                : this.getPinpointUserList(this.searchQuery);
+                : (
+                    this.getPinpointUserList(this.searchQuery),
+                    this.analyticsService.trackEvent(TRACKED_EVENT_LIST.CREATE_USER)
+                );
             this.hideProcessing();
         }, (error: string) => {
             this.hideProcessing();
@@ -171,6 +189,7 @@ export class PinpointUserContainerComponent implements OnInit, OnDestroy {
         });
     }
     onUpdatePinpointUser(pinpointUser: PinpointUser): void {
+        this.showProcessing();
         const editPinpointUser = this.pinpointUserList[this.editPinpointUserIndex];
         this.pinpointUserDataService.update({
             userId: pinpointUser.userId,
@@ -184,11 +203,17 @@ export class PinpointUserContainerComponent implements OnInit, OnDestroy {
                 this.errorMessage = response.errorMessage;
             } else {
                 this.getPinpointUserList(this.searchQuery);
-                this.pinpointUserInteractionService.setUserUpdated({
-                    userId: pinpointUser.userId,
-                    department: pinpointUser.department,
-                    name: pinpointUser.name
-                });
+                if (this.isUserGroupSelected) {
+                    this.messageQueueService.sendMessage({
+                        to: MESSAGE_TO.PINPOINT_USER_UPDATE_USER,
+                        param: [{
+                            userId: pinpointUser.userId,
+                            department: pinpointUser.department,
+                            name: pinpointUser.name
+                        }]
+                    });
+                }
+                this.analyticsService.trackEvent(TRACKED_EVENT_LIST.UPDATE_USER);
             }
 
             this.hideProcessing();
@@ -200,9 +225,18 @@ export class PinpointUserContainerComponent implements OnInit, OnDestroy {
     onRemovePinpointUser(userId: string): void {
         this.showProcessing();
         this.pinpointUserDataService.remove(userId).subscribe((response: IPinpointUserResponse | IServerErrorShortFormat) => {
-            isThatType<IServerErrorShortFormat>(response, 'errorCode', 'errorMessage')
-                ? this.errorMessage = response.errorMessage
-                : this.pinpointUserList.splice(this.getPinpointUserIndexByUserId(userId), 1);
+            if (isThatType<IServerErrorShortFormat>(response, 'errorCode', 'errorMessage')) {
+                this.errorMessage = response.errorMessage;
+            } else {
+                this.pinpointUserList.splice(this.getPinpointUserIndexByUserId(userId), 1);
+                if (this.isUserGroupSelected) {
+                    this.messageQueueService.sendMessage({
+                        to: MESSAGE_TO.PINPOINT_USER_REMOVE_USER,
+                        param: [userId]
+                    });
+                }
+                this.analyticsService.trackEvent(TRACKED_EVENT_LIST.REMOVE_USER);
+            }
             this.hideProcessing();
         }, (error: IServerErrorFormat) => {
             this.hideProcessing();
@@ -220,6 +254,7 @@ export class PinpointUserContainerComponent implements OnInit, OnDestroy {
             editPinpointUser.department
         );
         this.onShowCreateUserPopup();
+        this.analyticsService.trackEvent(TRACKED_EVENT_LIST.SHOW_USER_UPDATE_POPUP);
     }
     private getPinpointUserIndexByUserId(userId: string): number {
         let index = -1;

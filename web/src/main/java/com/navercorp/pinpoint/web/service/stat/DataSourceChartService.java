@@ -16,12 +16,11 @@
 
 package com.navercorp.pinpoint.web.service.stat;
 
-import com.navercorp.pinpoint.common.service.ServiceTypeRegistryService;
 import com.navercorp.pinpoint.common.util.CollectionUtils;
+import com.navercorp.pinpoint.loader.service.ServiceTypeRegistryService;
 import com.navercorp.pinpoint.rpc.util.ListUtils;
 import com.navercorp.pinpoint.web.dao.stat.SampledDataSourceDao;
 import com.navercorp.pinpoint.web.util.TimeWindow;
-import com.navercorp.pinpoint.web.vo.stat.SampledDataSource;
 import com.navercorp.pinpoint.web.vo.stat.SampledDataSourceList;
 import com.navercorp.pinpoint.web.vo.stat.chart.StatChart;
 import com.navercorp.pinpoint.web.vo.stat.chart.agent.DataSourceChart;
@@ -59,7 +58,7 @@ public class DataSourceChartService implements AgentStatChartService {
 
         List<SampledDataSourceList> sampledAgentStatList = this.sampledDataSourceDao.getSampledAgentStatList(agentId, timeWindow);
         if (CollectionUtils.isEmpty(sampledAgentStatList)) {
-            return new DataSourceChart(timeWindow, Collections.<SampledDataSource>emptyList(), serviceTypeRegistryService);
+            return new DataSourceChart(timeWindow, Collections.emptyList(), serviceTypeRegistryService);
         } else {
             return new DataSourceChart(timeWindow, ListUtils.getFirst(sampledAgentStatList).getSampledDataSourceList(), serviceTypeRegistryService);
         }
@@ -77,7 +76,7 @@ public class DataSourceChartService implements AgentStatChartService {
         List<SampledDataSourceList> sampledAgentStatList = this.sampledDataSourceDao.getSampledAgentStatList(agentId, timeWindow);
         if (CollectionUtils.isEmpty(sampledAgentStatList)) {
             List<StatChart> result = new ArrayList<>(1);
-            result.add(new DataSourceChart(timeWindow, Collections.<SampledDataSource>emptyList(), serviceTypeRegistryService));
+            result.add(new DataSourceChart(timeWindow, Collections.emptyList(), serviceTypeRegistryService));
             return result;
         } else {
             List<StatChart> result = new ArrayList<>(sampledAgentStatList.size());

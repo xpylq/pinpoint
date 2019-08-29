@@ -16,7 +16,7 @@
 
 package com.navercorp.pinpoint.collector.receiver.thrift.udp;
 
-import com.navercorp.pinpoint.collector.receiver.thrift.DispatchHandler;
+import com.navercorp.pinpoint.collector.receiver.DispatchHandler;
 import com.navercorp.pinpoint.collector.util.PacketUtils;
 import com.navercorp.pinpoint.io.request.DefaultServerRequest;
 import com.navercorp.pinpoint.io.request.Message;
@@ -80,7 +80,7 @@ public class ChunkedUDPPacketHandlerFactory<T extends DatagramPacket> implements
                     if (filter.filter(localSocket, message.getData(), remoteAddress) == TBaseFilter.BREAK) {
                         return;
                     }
-                    ServerRequest<TBase<?, ?>> request = newServerRequest(message, remoteAddress);;
+                    ServerRequest<TBase<?, ?>> request = newServerRequest(message, remoteAddress);
                     // dispatch signifies business logic execution
                     dispatchHandler.dispatchSendMessage(request);
                 }

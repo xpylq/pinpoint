@@ -1,5 +1,5 @@
-
-import { NgModule } from '@angular/core';
+import { NgModule, ModuleWithProviders } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ClipboardModule } from 'ngx-clipboard';
@@ -22,7 +22,6 @@ import { AnalyticsService } from './services/analytics.service';
 import { BrowserSupportCheckService } from './services/browser-support-check.service';
 import { AgentHistogramDataService } from './services/agent-histogram-data.service';
 import { TransactionDetailDataService } from './services/transaction-detail-data.service';
-import { TransactionViewTypeService } from './services/transaction-view-type.service';
 import { StoreHelperService } from './services/store-helper.service';
 import { UrlValidateGuard } from './services/url-validate.guard';
 
@@ -34,13 +33,17 @@ import { FilmForDisableComponent } from './components/film-for-disable';
 import { SimpleProgressSliderComponent } from './components/simple-progress-slider';
 import { FormFieldErrorMessageComponent } from './components/form-field-error-message';
 import { ServerErrorMessageComponent } from './components/server-error-message';
-import { SettingHeightDirective } from './directives/setting-height.directive';
 import { ContextPopupDirective } from './directives/context-popup.directive';
 import { SplitterDirective } from './directives/splitter.directive';
 import { SearchInputDirective } from './directives/search-input.directive';
 import { SafeHtmlPipe } from './pipes/safe-html.pipe';
 import { JSONTextParserPipe } from './pipes/json-text-parser.pipe';
-import { DynamicPopupService } from 'app/shared/services/dynamic-popup.service';
+import { DynamicPopupService } from './services/dynamic-popup.service';
+import { MessageQueueService } from './services/message-queue.service';
+import { WindowRefService } from './services/window-ref.service';
+import { ApplicationListDataService } from './services/application-list-data.service';
+import { SafeStylePipe } from './pipes/safe-style.pipe';
+import { RetryComponent } from './components/retry';
 
 @NgModule({
     declarations: [
@@ -49,23 +52,26 @@ import { DynamicPopupService } from 'app/shared/services/dynamic-popup.service';
         EmptyContentsComponent,
         UrlRedirectorComponent,
         LoadingComponent,
+        RetryComponent,
         FilmForDisableComponent,
         SimpleProgressSliderComponent,
         FormFieldErrorMessageComponent,
         ServerErrorMessageComponent,
         SafeHtmlPipe,
+        SafeStylePipe,
         JSONTextParserPipe,
-        SettingHeightDirective,
         ContextPopupDirective,
         SplitterDirective,
         SearchInputDirective
     ],
     imports: [
         CommonModule,
+        RouterModule,
         ClickOutsideModule
     ],
     exports: [
         CommonModule,
+        RouterModule,
         FormsModule,
         ClipboardModule,
         ClickOutsideModule,
@@ -73,39 +79,49 @@ import { DynamicPopupService } from 'app/shared/services/dynamic-popup.service';
         EmptyContentsComponent,
         UrlRedirectorComponent,
         LoadingComponent,
+        RetryComponent,
         FilmForDisableComponent,
         SimpleProgressSliderComponent,
         FormFieldErrorMessageComponent,
         ServerErrorMessageComponent,
         SafeHtmlPipe,
+        SafeStylePipe,
         JSONTextParserPipe,
-        SettingHeightDirective,
         ContextPopupDirective,
         SplitterDirective,
         SearchInputDirective
     ],
-    providers: [
-        TranslateReplaceService,
-        ServerTimeDataService,
-        ServerTimeResolverService,
-        ComponentDefaultSettingDataService,
-        RouteInfoCollectorService,
-        WebAppSettingDataService,
-        NewUrlStateNotificationService,
-        UrlRouteManagerService,
-        SystemConfigurationDataService,
-        SystemConfigurationResolverService,
-        SplitRatioService,
-        GutterEventService,
-        ApplicationListResolverService,
-        AnalyticsService,
-        BrowserSupportCheckService,
-        AgentHistogramDataService,
-        TransactionDetailDataService,
-        TransactionViewTypeService,
-        StoreHelperService,
-        UrlValidateGuard,
-        DynamicPopupService
-    ]
+    providers: []
 })
-export class SharedModule { }
+export class SharedModule {
+    static forRoot(): ModuleWithProviders {
+        return {
+            ngModule: SharedModule,
+            providers: [
+                SystemConfigurationDataService,
+                SystemConfigurationResolverService,
+                TranslateReplaceService,
+                ServerTimeDataService,
+                ServerTimeResolverService,
+                ComponentDefaultSettingDataService,
+                RouteInfoCollectorService,
+                WebAppSettingDataService,
+                NewUrlStateNotificationService,
+                UrlRouteManagerService,
+                StoreHelperService,
+                UrlValidateGuard,
+                AnalyticsService,
+                WindowRefService,
+                SplitRatioService,
+                GutterEventService,
+                BrowserSupportCheckService,
+                AgentHistogramDataService,
+                TransactionDetailDataService,
+                MessageQueueService,
+                DynamicPopupService,
+                ApplicationListResolverService,
+                ApplicationListDataService
+            ]
+        };
+    }
+}

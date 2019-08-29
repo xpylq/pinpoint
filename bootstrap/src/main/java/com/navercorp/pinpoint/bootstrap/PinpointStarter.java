@@ -21,10 +21,11 @@ import com.navercorp.pinpoint.bootstrap.classloader.ProfilerLibs;
 import com.navercorp.pinpoint.bootstrap.config.DefaultProfilerConfig;
 import com.navercorp.pinpoint.bootstrap.config.ProfilerConfig;
 import com.navercorp.pinpoint.common.Version;
-import com.navercorp.pinpoint.common.util.PinpointThreadFactory;
+import com.navercorp.pinpoint.common.util.PropertyUtils;
 import com.navercorp.pinpoint.common.util.SimpleProperty;
 import com.navercorp.pinpoint.common.util.SystemProperty;
 
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.security.AccessController;
@@ -32,6 +33,7 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Jongho Moon
@@ -110,7 +112,7 @@ class PinpointStarter {
 
         try {
             // Is it right to load the configuration in the bootstrap?
-            ProfilerConfig profilerConfig = DefaultProfilerConfig.load(configPath);
+            ProfilerConfig profilerConfig = loadConfiguration(configPath);
 
             // this is the library list that must be loaded
             final URL[] urls = resolveLib(agentDirectory);
@@ -127,7 +129,8 @@ class PinpointStarter {
             AgentOption option = createAgentOption(agentId, applicationName, isContainer, profilerConfig, instrumentation, pluginJars, agentDirectory);
             Agent pinpointAgent = agentBootLoader.boot(option);
             pinpointAgent.start();
-            registerShutdownHook(pinpointAgent);
+            pinpointAgent.registerStopHandler();
+
             logger.info("pinpoint agent started normally.");
         } catch (Exception e) {
             // unexpected exception that did not be checked above
@@ -135,6 +138,15 @@ class PinpointStarter {
             return false;
         }
         return true;
+    }
+
+    private ProfilerConfig loadConfiguration(String configPath) throws IOException {
+        final Properties properties = PropertyUtils.loadProperty(configPath);
+        if (isTestAgent()) {
+            properties.put(DefaultProfilerConfig.PROFILER_INTERCEPTOR_EXCEPTION_PROPAGATE, "true");
+        }
+        return new DefaultProfilerConfig(properties);
+
     }
 
     private ClassLoader createClassLoader(final String name, final URL[] urls, final ClassLoader parentClassLoader) {
@@ -150,11 +162,15 @@ class PinpointStarter {
     }
 
     private String getBootClass() {
-        final String agentType = getAgentType().toUpperCase();
-        if (PLUGIN_TEST_AGENT.equals(agentType)) {
+        if (isTestAgent()) {
             return PLUGIN_TEST_BOOT_CLASS;
         }
         return BOOT_CLASS;
+    }
+
+    private boolean isTestAgent() {
+        final String agentType = getAgentType();
+        return PLUGIN_TEST_AGENT.equalsIgnoreCase(agentType);
     }
 
     private String getAgentType() {
@@ -179,19 +195,6 @@ class PinpointStarter {
     void setSystemProperty(SimpleProperty systemProperty) {
         this.systemProperty = systemProperty;
     }
-
-    private void registerShutdownHook(final Agent pinpointAgent) {
-        final Runnable stop = new Runnable() {
-            @Override
-            public void run() {
-                pinpointAgent.stop();
-            }
-        };
-        PinpointThreadFactory pinpointThreadFactory = new PinpointThreadFactory("Pinpoint-shutdown-hook", false);
-        Thread thread = pinpointThreadFactory.newThread(stop);
-        Runtime.getRuntime().addShutdownHook(thread);
-    }
-
 
     private void saveLogFilePath(AgentDirectory agentDirectory) {
         String agentLogFilePath = agentDirectory.getAgentLogFilePath();
