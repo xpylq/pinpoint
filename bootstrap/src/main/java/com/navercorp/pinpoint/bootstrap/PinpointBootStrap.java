@@ -32,7 +32,7 @@ import com.navercorp.pinpoint.bootstrap.agentdir.JavaAgentPathResolver;
 /**
  * @author emeroad
  * @author netspider
- * agent代理类，在main方法执行执行
+ * agent代理类，先于main方法执行
  */
 public class PinpointBootStrap {
 
