@@ -74,11 +74,11 @@ public class RpcModule extends PrivateModule {
         bind(metadataMessageConverterKey).toProvider(MetadataMessageConverterProvider.class ).in(Scopes.SINGLETON);
 //        expose(metadataMessageConverterKey);
 
-
+        //span信息发送
         Key<DataSender> spanDataSender = Key.get(DataSender.class, SpanDataSender.class);
         bind(spanDataSender).toProvider(SpanDataSenderProvider.class).in(Scopes.SINGLETON);
         expose(spanDataSender);
-
+        //stat发送
         Key<DataSender> statDataSender = Key.get(DataSender.class, StatDataSender.class);
         bind(DataSender.class).annotatedWith(StatDataSender.class)
                 .toProvider(StatDataSenderProvider.class).in(Scopes.SINGLETON);

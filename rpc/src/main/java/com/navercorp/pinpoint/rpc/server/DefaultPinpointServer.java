@@ -71,6 +71,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Taejin Koo
+ * 每进来一个客户端连接，就会创建一个DefaultPinpointServer
+ * 实际上就是channel和DefaultPinpointServer一一对应的关系
  */
 public class DefaultPinpointServer implements PinpointServer {
 
@@ -295,6 +297,10 @@ public class DefaultPinpointServer implements PinpointServer {
         }
     }
 
+    /**
+     * 核心的处理消息的入口
+     * @author youzhihao
+     */
     @Override
     public void messageReceived(Object message) {
         if (!isEnableCommunication()) {

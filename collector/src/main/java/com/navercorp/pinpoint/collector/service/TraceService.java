@@ -107,14 +107,14 @@ public class TraceService {
 
         final boolean isError = span.getErrCode() != 0;
         int bugCheck = 0;
-        if (span.getParentSpanId() == -1) {
+        if (span.getParentSpanId() == -1) {//首节点
             if (spanServiceType.isQueue()) {
-                // create virtual queue node
+                // create virtual queue node,如果是队列就创建的虚拟的node
                 statisticsService.updateCaller(span.getAcceptorHost(), spanServiceType, span.getRemoteAddr(), span.getApplicationId(), applicationServiceType, span.getEndPoint(), span.getElapsed(), isError);
 
                 statisticsService.updateCallee(span.getApplicationId(), applicationServiceType, span.getAcceptorHost(), spanServiceType, span.getAgentId(), span.getElapsed(), isError);
             } else {
-                // create virtual user
+                // create virtual user,如果是队列就创建的虚拟的用户
                 statisticsService.updateCaller(span.getApplicationId(), ServiceType.USER, span.getAgentId(), span.getApplicationId(), applicationServiceType, span.getAgentId(), span.getElapsed(), isError);
 
                 // update the span information of the current node (self)

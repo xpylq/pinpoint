@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  * ServerPacketDecoder passes the PING related packets(without status value) to the next step.
- *
+ * 服务端的解码
  * @author emeroad
  * @author koo.taejin
  */

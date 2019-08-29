@@ -58,6 +58,7 @@ public final class ClientFactoryUtils {
         }
     }
 
+    //用这个
     public static PinpointClient createPinpointClient(String host, int port, PinpointClientFactory clientFactory) {
 
         PinpointClient pinpointClient = null;

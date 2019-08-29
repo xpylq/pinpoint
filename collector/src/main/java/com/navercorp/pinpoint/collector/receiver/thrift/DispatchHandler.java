@@ -23,12 +23,14 @@ import org.apache.thrift.TBase;
 /**
  * @author emeroad
  * @author koo.taejin
+ * 详细的分发处理handler
  */
 public interface DispatchHandler {
 
     // Separating Send and Request. That dose not be satisfied but try to change that later.
+    // 客户端发送消息，并且无需服务端返回的
     void dispatchSendMessage(ServerRequest serverRequest);
-
+    // 客户端发送消息,并且需要服务端返回的
     void dispatchRequestMessage(ServerRequest serverRequest, ServerResponse serverResponse);
 
 }

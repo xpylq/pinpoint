@@ -69,7 +69,7 @@ public class HBaseAgentStatService implements AgentStatService {
 
     @Autowired
     private AgentStatDaoV2<DirectBufferBo> directBufferDao;
-
+//TransactionBo,ActiveTraceBo,DataSourceListBo,ResponseTimeBo,DeadlockThreadCountBo,FileDescriptorBo,DirectBufferBo
     @Override
     public void save(AgentStatBo agentStatBo) {
         final String agentId = agentStatBo.getAgentId();

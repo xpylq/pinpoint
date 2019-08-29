@@ -65,9 +65,10 @@ public class AgentStatHbaseOperationFactory {
         if (CollectionUtils.isEmpty(agentStatDataPoints)) {
             return Collections.emptyList();
         }
+        //将统计信息处理成: <5分钟基准,5分钟内的所有统计信息>
         Map<Long, List<T>> timeslots = slotAgentStatDataPoints(agentStatDataPoints);
         List<Put> puts = new ArrayList<Put>();
-        for (Map.Entry<Long, List<T>> timeslot : timeslots.entrySet()) {
+        for (Map.Entry<Long, List<T>> timeslot : timeslots.entrySet()) {//每5分钟存在一行里
             long baseTimestamp = timeslot.getKey();
             List<T> slottedAgentStatDataPoints = timeslot.getValue();
 
@@ -109,11 +110,16 @@ public class AgentStatHbaseOperationFactory {
         return this.rowKeyDecoder.decodeRowKey(originalRowKey).getBaseTimestamp();
     }
 
+    /**
+     * 处理统计信息
+     * 以统计时间5分钟取整，处理成map结构
+     * @author youzhihao
+     */
     private <T extends AgentStatDataPoint> Map<Long, List<T>> slotAgentStatDataPoints(List<T> agentStatDataPoints) {
         Map<Long, List<T>> timeslots = new TreeMap<Long, List<T>>();
         for (T agentStatDataPoint : agentStatDataPoints) {
             long timestamp = agentStatDataPoint.getTimestamp();
-            long timeslot = AgentStatUtils.getBaseTimestamp(timestamp);
+            long timeslot = AgentStatUtils.getBaseTimestamp(timestamp);//默认处理成5分钟的整数倍
             List<T> slottedDataPoints = timeslots.get(timeslot);
             if (slottedDataPoints == null) {
                 slottedDataPoints = new ArrayList<T>();

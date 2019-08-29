@@ -17,6 +17,8 @@
 package com.navercorp.pinpoint.common.server.bo.serializer.stat;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import static com.navercorp.pinpoint.common.hbase.HBaseTables.AGENT_STAT_TIMESPAN_MS;
 
@@ -50,5 +52,21 @@ public class AgentStatUtils {
 
     public static long getBaseTimestamp(long timestamp) {
         return timestamp - (timestamp % AGENT_STAT_TIMESPAN_MS);
+    }
+
+    public static void main(String[] args) {
+        SimpleDateFormat format=new SimpleDateFormat("yyyy年MM月dd日 HH时mm分ss秒");
+        while(true)
+        {
+            Long timeStamp=System.currentTimeMillis();
+            Long baseTimestamp=getBaseTimestamp(timeStamp);
+            System.out.println("当前时间: "+format.format(new Date(timeStamp))+",处理过的时间: "+format.format(new Date(baseTimestamp)));
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 }

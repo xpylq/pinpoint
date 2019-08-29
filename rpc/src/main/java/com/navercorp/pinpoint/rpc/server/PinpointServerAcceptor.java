@@ -30,6 +30,7 @@ import com.navercorp.pinpoint.rpc.stream.DisabledServerStreamChannelMessageListe
 import com.navercorp.pinpoint.rpc.stream.ServerStreamChannelMessageListener;
 import com.navercorp.pinpoint.rpc.util.LoggerFactorySetup;
 import com.navercorp.pinpoint.rpc.util.TimerFactory;
+
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -59,7 +60,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author Taejin Koo
+ * @author Taejin Koo pinpoint服务端接收器
  */
 public class PinpointServerAcceptor implements PinpointServerConfig {
 
@@ -112,6 +113,10 @@ public class PinpointServerAcceptor implements PinpointServerConfig {
         this(serverOption, channelConnectedFilter, new ServerCodecPipelineFactory());
     }
 
+    /**
+     * @param pipelineFactory 创建pipeline,并添加基础的channel handle,默认为ServerCodecPipelineFactory
+     * @author youzhihao
+     */
     public PinpointServerAcceptor(ServerOption serverOption, ChannelFilter channelConnectedFilter, PipelineFactory pipelineFactory) {
         ServerBootstrap bootstrap = createBootStrap(1, WORKER_COUNT);
         setOptions(bootstrap);
@@ -158,13 +163,14 @@ public class PinpointServerAcceptor implements PinpointServerConfig {
         // bootstrap.setOption("child.soLinger", 0);
     }
 
+    //增加channel handler
     private void addPipeline(ServerBootstrap bootstrap, final PipelineFactory pipelineFactory) {
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             @Override
             public ChannelPipeline getPipeline() throws Exception {
+                //返回pipeline，并添加好相应的编解码channel handle
                 ChannelPipeline pipeline = pipelineFactory.newPipeline();
                 pipeline.addLast("handler", nettyChannelHandler);
-
                 return pipeline;
             }
         });
@@ -308,6 +314,7 @@ public class PinpointServerAcceptor implements PinpointServerConfig {
     }
 
     class PinpointServerChannelHandler extends SimpleChannelHandler {
+        //当有新的客户端连接，创建DefaultPinpointServer实例
         @Override
         public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
             final Channel channel = e.getChannel();
@@ -329,7 +336,7 @@ public class PinpointServerAcceptor implements PinpointServerConfig {
                 logger.debug("channelConnected() channel discard. {}", channel);
                 return;
             }
-
+            //创建一个DefaultPinpointServer
             DefaultPinpointServer pinpointServer = createPinpointServer(channel);
 
             channel.setAttachment(pinpointServer);
@@ -363,7 +370,7 @@ public class PinpointServerAcceptor implements PinpointServerConfig {
 
             super.channelClosed(ctx, e);
         }
-
+        //处理发送到服务端，已经解码好的消息
         @Override
         public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
             final Channel channel = e.getChannel();

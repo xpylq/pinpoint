@@ -20,6 +20,7 @@ import org.jboss.netty.channel.ChannelPipeline;
 
 /**
  * @author Taejin Koo
+ * 基础的channel handler注册工厂
  */
 public interface PipelineFactory {
 

@@ -283,6 +283,7 @@
         <property name="registry" value="#{baseDataReceiverConfig.workerMonitorEnable ? metricRegistry : null}"/>
     </bean>
 
+    <!---tcp协议下，基础数据接收器-->
     <bean id="tcpReceiver" class="com.navercorp.pinpoint.collector.receiver.thrift.tcp.AgentBaseDataReceiver" >
         <constructor-arg ref="baseDataReceiverConfig"/>
         <constructor-arg ref="baseDataReceiverWorker"/>
@@ -333,7 +334,7 @@
         <property name="serverOption"  ref="spanAcceptorOption"/>
         <property name="channelFilter" ref="channelFilter"/>
     </bean>
-
+    <!--tcp协议下，全链路数据接收器-->
     <bean id="spanTcpReceiver" class="com.navercorp.pinpoint.collector.receiver.thrift.TCPReceiverBean">
         <property name="bindIp" value="#{spanReceiverConfig.tcpBindIp}"/>
         <property name="bindPort" value="#{spanReceiverConfig.tcpBindPort}"/>
@@ -376,7 +377,7 @@
         <property name="serverOption"  ref="statAcceptorOption"/>
         <property name="channelFilter" ref="channelFilter"/>
     </bean>
-
+    <!--处理TAgentStat,-->
     <bean id="statTcpReceiver" class="com.navercorp.pinpoint.collector.receiver.thrift.TCPReceiverBean">
         <property name="bindIp" value="#{statReceiverConfig.tcpBindIp}"/>
         <property name="bindPort" value="#{statReceiverConfig.tcpBindPort}"/>
